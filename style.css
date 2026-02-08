@@ -3,25 +3,27 @@
 }
 
 #contenu_jeu{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr 200px; /* 1fr pour le plateau, 200px pour la zone des pièces */
+    gap: 20px;
+    justify-items: center; /* centre horizontalement chaque élément dans sa colonne */
+    align-items: start;    /* commence en haut */
+    min-height: 100vh;
     margin: 0;
     padding: 20px;
 }
 
 
 #container {
-    display: flex;
-    gap: 50px; 
+    display: grid;
+    grid-template-columns: 300px 150px; /* 300px pour le plateau, 150px pour la zone des pièces */
+    gap: 50px; /* espace entre les deux zones */ 
 }
 #board{
     display: grid;
-    grid-template-columns: repeat(5, 60px); /* 5 colonnes de 60px */
-    grid-template-rows: repeat(5, 60px);    /* 5 lignes de 60px */
-    gap: 5px;                               /* espace entre les cases */
-    justify-content: center;
-    margin-top: 30px;
+    grid-template-columns: repeat(5, 60px);
+    grid-template-rows: repeat(5, 60px);
+    gap: 5px;
 }
 
 .cell {
@@ -35,6 +37,13 @@
     cursor: pointer;
 }
 
-.piece {
+.piece1 {
+    display: grid;
+    grid-template-columns: repeat(2, 60px); 
+    grid-auto-rows: 60px;
+    border-radius: 20px;
+    gap: 5px;
     cursor: grab;
+    
 }
+
