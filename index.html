@@ -1,36 +1,30 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
-    <title>Jeu d'IQ</title>
+    <title>Puzzle IQ</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <h1 id="titre">Test de  IQ</h1>
-    <div id="contenu_jeu">
-        <div id="board"></div>
-        <div id="container">
-            <div class="piece1">
-                <svg width="80" height="80">
-                    <rect x="5" y="5" width="60" height="60" rx="20"  fill="orange" />
-                </svg>
-                <svg width="80" height="80">
-                    <rect x="5" y="5" width="60" height="60" rx="20" fill="orange" />
-                </svg>
-                <svg width="80" height="80">
-                    <rect x="5" y="5" width="60" height="60" rx="20" fill="orange" />
-                </svg>
-            </div>
+    <h1>🧩 Puzzle IQ</h1>
 
-        </div>
+    <div class="controls">
+        Largeur <input id="w" type="number" value="6" min="4" max="10">
+        Hauteur <input id="h" type="number" value="6" min="4" max="10">
+        <button id="generate">Générer</button>
     </div>
-    
 
-    
+    <p class="hint">Choisis la taille puis clique sur Générer</p>
 
-    
+    <div class="game">
+        <svg id="board"></svg>
+        <svg id="pieces"></svg>
+    </div>
 
     <script src="script.js"></script>
 </body>
+
 </html>

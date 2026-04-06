@@ -1,49 +1,54 @@
-#titre{
-    text-align: center;
-}
-
-#contenu_jeu{
-    display: grid;
-    grid-template-columns: 1fr 200px; /* 1fr pour le plateau, 200px pour la zone des pièces */
-    gap: 20px;
-    justify-items: center; /* centre horizontalement chaque élément dans sa colonne */
-    align-items: start;    /* commence en haut */
-    min-height: 100vh;
+body {
     margin: 0;
-    padding: 20px;
-}
-
-
-#container {
-    display: grid;
-    grid-template-columns: 300px 150px; /* 300px pour le plateau, 150px pour la zone des pièces */
-    gap: 50px; /* espace entre les deux zones */ 
-}
-#board{
-    display: grid;
-    grid-template-columns: repeat(5, 60px);
-    grid-template-rows: repeat(5, 60px);
-    gap: 5px;
-}
-
-.cell {
-    background-color: #e0e0e0;
-    border: 2px solid #333;
+    background: linear-gradient(135deg, #1e1e2f, #2c2c44);
+    color: white;
+    font-family: Arial, sans-serif;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    font-size: 20px;
+}
+
+h1 {
+    margin: 10px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+
+.hint {
+    opacity: 0.7;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+input,
+button {
+    padding: 8px 12px;
     border-radius: 20px;
+    border: none;
+}
+
+button {
+    background: #4caf50;
+    color: white;
     cursor: pointer;
 }
 
-.piece1 {
-    display: grid;
-    grid-template-columns: repeat(2, 60px); 
-    grid-auto-rows: 60px;
-    border-radius: 20px;
-    gap: 5px;
-    cursor: grab;
-    
+.game {
+    display: flex;
+    gap: 20px;
 }
 
+svg {
+    background: #ddd;
+    border-radius: 10px;
+}
+
+.piece rect {
+    stroke: #222;
+    stroke-width: 2;
+    cursor: grab;
+}
