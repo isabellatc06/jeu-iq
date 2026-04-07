@@ -1,31 +1,35 @@
-const CELL = 50;
+const CELL = 50; //taille du tableau
 
-let board = [];
+let board = []; //tableau
 let boardW = 0;
 let boardH = 0;
 let obstacles = [];
-let pieces = [];
+let pieces = []; //liste de pieces 
 
 let dragged = null;
 let offset = { x: 0, y: 0 };
 
+//references aux <svg> du HTML
 const boardSVG = document.getElementById("board");
 const piecesSVG = document.getElementById("pieces");
+
 
 // ---------- UTILS ----------
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 
 // ---------- GAME ----------
+
+//cration du tableau selon la longueur et la largeur
 function generateGame(w, h) {
     boardW = w;
     boardH = h;
 
-    obstacles = generateObstacles(w, h);
-    board = initBoard(w, h, obstacles);
-    pieces = generateSimplePieces(w, h, obstacles);
+    obstacles = generateObstacles(w, h); //met les obstacle aleatoirement
+    board = initBoard(w, h, obstacles); //cree le tableau avec obstacles
+    pieces = generateSimplePieces(w, h, obstacles); //cree les pieces selon les cases qui restent
 
-    drawBoard();
-    drawPieces();
+    drawBoard(); //dessine les cases du tableau 
+    drawPieces(); //dessine les pieces
 }
 
 // ---------- OBSTACLES ----------
@@ -53,6 +57,16 @@ function drawBoard() {
     boardSVG.setAttribute("width", boardW * CELL);
     boardSVG.setAttribute("height", boardH * CELL);
 
+    // Auto-zoom
+    const maxW = window.innerWidth * 0.45;
+    const maxH = window.innerHeight * 0.7;
+
+    const scale = Math.min(maxW / (boardW * CELL), maxH / (boardH * CELL), 1);
+
+    boardSVG.style.transform = `scale(${scale})`;
+    boardSVG.dataset.scale = scale; // 🔥 indispensable
+
+    // dessin des cases
     for (let y = 0; y < boardH; y++) {
         for (let x = 0; x < boardW; x++) {
             const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -116,11 +130,13 @@ function generateSimplePieces(w, h, obs) {
 // ---------- DRAW PIECES ----------
 function drawPieces() {
     piecesSVG.innerHTML = "";
-    const visiblePieces = pieces.filter(p => !p.placed);
-    piecesSVG.setAttribute("width", 220);
-    piecesSVG.setAttribute("height", Math.max(visiblePieces.length * 70 + 20, 200));
+    piecesSVG.setAttribute("width", 300);
+    piecesSVG.setAttribute("height", Math.max(400, pieces.length * 80));
 
-    visiblePieces.forEach((p, index) => {
+
+    pieces.forEach((p, index) => {
+
+        // Posición en el plato SIEMPRE
         if (!dragged || dragged !== p) {
             p.x = 20;
             p.y = index * 70;
@@ -131,22 +147,34 @@ function drawPieces() {
         g.setAttribute("transform", `translate(${p.x},${p.y})`);
         p.g = g;
 
-        drawPieceShape(p);
+        // dibujar forma
+        p.shape.forEach(([dx, dy]) => {
+            const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            r.setAttribute("x", dx * CELL / 2);
+            r.setAttribute("y", dy * CELL / 2);
+            r.setAttribute("width", CELL / 2);
+            r.setAttribute("height", CELL / 2);
+            r.setAttribute("rx", 6);
+            r.setAttribute("fill", p.color);
+            g.appendChild(r);
+        });
 
+        // eventos
         g.onpointerdown = e => {
             dragged = p;
-            offset.x = e.offsetX - p.x;
-            offset.y = e.offsetY - p.y;
+            
+            offset.x = e.clientX - p.x;
+            offset.y = e.clientY - p.y;
+
             g.setPointerCapture(e.pointerId);
 
-            // mettre la pièce au-dessus pour drag visible
+            // poner encima
             piecesSVG.appendChild(g);
         };
 
         g.ondblclick = () => {
-            // rotation seulement de cette pièce
             p.shape = p.shape.map(([x, y]) => [-y, x]);
-            drawPieceShape(p);
+            drawPieces();
         };
 
         piecesSVG.appendChild(g);
@@ -187,31 +215,68 @@ document.onpointerup = e => {
 // ---------- SNAP & PLACE ----------
 function snapAndPlace(p) {
     const rect = boardSVG.getBoundingClientRect();
-    const gx = Math.round((p.x - rect.left) / CELL);
-    const gy = Math.round((p.y - rect.top) / CELL);
+    const scale = parseFloat(boardSVG.dataset.scale || 1);
 
+    // coordonnées du centre de la pièce en pixels écran
+    const screenX = p.x;
+    const screenY = p.y;
+
+    // conversion écran → coordonnées plateau
+    const localX = (screenX - rect.left) / scale;
+    const localY = (screenY - rect.top) / scale;
+
+    const gx = Math.round(localX / CELL);
+    const gy = Math.round(localY / CELL);
+
+    // 🧹 1. Limpiar posición anterior de la pieza
+    for (let y = 0; y < boardH; y++) {
+        for (let x = 0; x < boardW; x++) {
+            if (board[y][x] === p.id) {
+                board[y][x] = 0;
+            }
+        }
+    }
+
+    // 🔍 2. Verificar si se puede colocar
     let canPlace = true;
     for (const [dx, dy] of p.shape) {
         const x = gx + dx;
         const y = gy + dy;
-        if (x < 0 || x >= boardW || y < 0 || y >= boardH || board[y][x] !== 0) {
+
+        if (
+            x < 0 || x >= boardW ||
+            y < 0 || y >= boardH ||
+            board[y][x] !== 0
+        ) {
             canPlace = false;
             break;
         }
     }
 
-    if (!canPlace) return;
+    // ❌ 3. Si NO encaja → volver al plato
+    if (!canPlace) {
+        p.placed = false;
+        p.x = 20;
+        p.y = p.id * 70;
 
+        if (p.g) {
+            p.g.setAttribute("transform", `translate(${p.x},${p.y})`);
+        }
+
+        drawBoard();
+        return;
+    }
+
+    // ✅ 4. Colocar en nueva posición
     for (const [dx, dy] of p.shape) {
         board[gy + dy][gx + dx] = p.id;
     }
 
     p.placed = true;
-    if (p.g) p.g.remove();
+
     drawBoard();
     checkWin();
 }
-
 // ---------- WIN ----------
 function checkWin() {
     for (let y = 0; y < boardH; y++) {
