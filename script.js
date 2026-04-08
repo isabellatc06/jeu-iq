@@ -1,35 +1,42 @@
-const CELL = 50; //taille du tableau
+const CELL = 50; // taille du tableau
 
-let board = []; //tableau
+let board = [];
 let boardW = 0;
 let boardH = 0;
 let obstacles = [];
-let pieces = []; //liste de pieces 
+let pieces = [];
 
 let dragged = null;
+let dragOrigin = null;
 let offset = { x: 0, y: 0 };
 
-//references aux <svg> du HTML
 const boardSVG = document.getElementById("board");
 const piecesSVG = document.getElementById("pieces");
 
+const dragLayer = document.createElement("div");
+dragLayer.style.position = "fixed";
+dragLayer.style.left = "0";
+dragLayer.style.top = "0";
+dragLayer.style.width = "0";
+dragLayer.style.height = "0";
+dragLayer.style.pointerEvents = "none";
+dragLayer.style.zIndex = "1000";
+document.body.appendChild(dragLayer);
 
 // ---------- UTILS ----------
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 
 // ---------- GAME ----------
-
-//cration du tableau selon la longueur et la largeur
 function generateGame(w, h) {
     boardW = w;
     boardH = h;
 
-    obstacles = generateObstacles(w, h); //met les obstacle aleatoirement
-    board = initBoard(w, h, obstacles); //cree le tableau avec obstacles
-    pieces = generateSimplePieces(w, h, obstacles); //cree les pieces selon les cases qui restent
+    obstacles = generateObstacles(w, h);
+    board = initBoard(w, h, obstacles);
+    pieces = generateSimplePieces(w, h, obstacles);
 
-    drawBoard(); //dessine les cases du tableau 
-    drawPieces(); //dessine les pieces
+    drawBoard();
+    drawPieces();
 }
 
 // ---------- OBSTACLES ----------
@@ -46,9 +53,7 @@ function generateObstacles(w, h) {
 // ---------- BOARD ----------
 function initBoard(w, h, obs) {
     return Array.from({ length: h }, (_, y) =>
-        Array.from({ length: w }, (_, x) =>
-            obs[y][x] === -1 ? -1 : 0
-        )
+        Array.from({ length: w }, (_, x) => (obs[y][x] === -1 ? -1 : 0))
     );
 }
 
@@ -57,16 +62,13 @@ function drawBoard() {
     boardSVG.setAttribute("width", boardW * CELL);
     boardSVG.setAttribute("height", boardH * CELL);
 
-    // Auto-zoom
     const maxW = window.innerWidth * 0.45;
     const maxH = window.innerHeight * 0.7;
-
     const scale = Math.min(maxW / (boardW * CELL), maxH / (boardH * CELL), 1);
 
     boardSVG.style.transform = `scale(${scale})`;
-    boardSVG.dataset.scale = scale; // 🔥 indispensable
+    boardSVG.dataset.scale = scale;
 
-    // dessin des cases
     for (let y = 0; y < boardH; y++) {
         for (let x = 0; x < boardW; x++) {
             const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -75,23 +77,44 @@ function drawBoard() {
             r.setAttribute("width", CELL);
             r.setAttribute("height", CELL);
             r.setAttribute("rx", 8);
-
-            if (board[y][x] === -1) r.setAttribute("fill", "#444");
-            else if (board[y][x] > 0) {
-                const p = pieces.find(p => p.id === board[y][x]);
-                r.setAttribute("fill", p ? p.color : "#aaa");
-            } else r.setAttribute("fill", "#eee");
-
+            r.setAttribute("fill", board[y][x] === -1 ? "#444" : "#eee");
             r.setAttribute("stroke", "#333");
             boardSVG.appendChild(r);
         }
     }
+
+    pieces
+        .filter(piece => piece.placed)
+        .forEach(piece => {
+            const g = createPieceGroup(piece, CELL);
+            g.setAttribute("transform", `translate(${piece.boardX * CELL},${piece.boardY * CELL})`);
+
+            g.onpointerdown = e => {
+                startDragFromBoard(piece, e);
+            };
+
+            g.ondblclick = () => {
+                removePieceFromBoard(piece);
+                piece.shape = piece.shape.map(([x, y]) => [-y, x]);
+
+                if (canPlaceAt(piece, piece.boardX, piece.boardY)) {
+                    placePieceOnBoard(piece, piece.boardX, piece.boardY);
+                } else {
+                    piece.placed = false;
+                }
+
+                drawBoard();
+                drawPieces();
+            };
+
+            boardSVG.appendChild(g);
+        });
 }
 
 // ---------- PIECES ----------
 function generateSimplePieces(w, h, obs) {
-    const used = obs.map(r => r.map(v => v === -1));
-    const pieces = [];
+    const used = obs.map(row => row.map(value => value === -1));
+    const generatedPieces = [];
     let id = 1;
 
     for (let y = 0; y < h; y++) {
@@ -109,14 +132,13 @@ function generateSimplePieces(w, h, obs) {
                     used[y + 1][x] = true;
                 }
 
-                pieces.push({
+                generatedPieces.push({
                     id,
                     shape,
-                    x: 20,
-                    y: id * 70,
                     placed: false,
-                    color: `hsl(${id * 60},70%,60%)`,
-                    g: null
+                    boardX: 0,
+                    boardY: 0,
+                    color: `hsl(${id * 60}, 70%, 60%)`
                 });
 
                 id++;
@@ -124,7 +146,7 @@ function generateSimplePieces(w, h, obs) {
         }
     }
 
-    return pieces;
+    return generatedPieces;
 }
 
 // ---------- DRAW PIECES ----------
@@ -133,150 +155,187 @@ function drawPieces() {
     piecesSVG.setAttribute("width", 300);
     piecesSVG.setAttribute("height", Math.max(400, pieces.length * 80));
 
+    pieces
+        .filter(piece => !piece.placed)
+        .forEach((piece, index) => {
+            const trayX = 20;
+            const trayY = index * 70;
+            const g = createPieceGroup(piece, CELL / 2);
+            g.setAttribute("transform", `translate(${trayX},${trayY})`);
 
-    pieces.forEach((p, index) => {
+            g.onpointerdown = e => {
+                startDragFromTray(piece, e, trayX, trayY);
+            };
 
-        // Posición en el plato SIEMPRE
-        if (!dragged || dragged !== p) {
-            p.x = 20;
-            p.y = index * 70;
-        }
+            g.ondblclick = () => {
+                piece.shape = piece.shape.map(([x, y]) => [-y, x]);
+                drawPieces();
+            };
 
-        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        g.classList.add("piece");
-        g.setAttribute("transform", `translate(${p.x},${p.y})`);
-        p.g = g;
-
-        // dibujar forma
-        p.shape.forEach(([dx, dy]) => {
-            const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            r.setAttribute("x", dx * CELL / 2);
-            r.setAttribute("y", dy * CELL / 2);
-            r.setAttribute("width", CELL / 2);
-            r.setAttribute("height", CELL / 2);
-            r.setAttribute("rx", 6);
-            r.setAttribute("fill", p.color);
-            g.appendChild(r);
-        });
-
-        // eventos
-        g.onpointerdown = e => {
-            dragged = p;
-            
-            offset.x = e.clientX - p.x;
-            offset.y = e.clientY - p.y;
-
-            g.setPointerCapture(e.pointerId);
-
-            // poner encima
             piecesSVG.appendChild(g);
-        };
-
-        g.ondblclick = () => {
-            p.shape = p.shape.map(([x, y]) => [-y, x]);
-            drawPieces();
-        };
-
-        piecesSVG.appendChild(g);
-    });
+        });
 }
 
-// Dessiner une pièce spécifique
-function drawPieceShape(p) {
-    if (!p.g) return;
-    p.g.innerHTML = "";
-    p.shape.forEach(([dx, dy]) => {
+// ---------- SVG HELPERS ----------
+function createPieceGroup(piece, unit) {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("piece");
+
+    piece.shape.forEach(([dx, dy]) => {
         const r = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        r.setAttribute("x", dx * CELL / 2);
-        r.setAttribute("y", dy * CELL / 2);
-        r.setAttribute("width", CELL / 2);
-        r.setAttribute("height", CELL / 2);
-        r.setAttribute("rx", 6);
-        r.setAttribute("fill", p.color);
-        p.g.appendChild(r);
+        r.setAttribute("x", dx * unit);
+        r.setAttribute("y", dy * unit);
+        r.setAttribute("width", unit);
+        r.setAttribute("height", unit);
+        r.setAttribute("rx", Math.max(4, unit * 0.12));
+        r.setAttribute("fill", piece.color);
+        g.appendChild(r);
     });
+
+    return g;
 }
 
-// ---------- DRAG ----------
-document.onpointermove = e => {
-    if (!dragged) return;
-    dragged.x = e.clientX - offset.x;
-    dragged.y = e.clientY - offset.y;
-    if (dragged.g) dragged.g.setAttribute("transform", `translate(${dragged.x},${dragged.y})`);
-};
+function createDragPreview(piece) {
+    dragLayer.innerHTML = "";
 
-document.onpointerup = e => {
-    if (!dragged) return;
-    snapAndPlace(dragged);
-    dragged = null;
-    drawPieces(); // repositionne toutes les pièces non posées
-};
+    const preview = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    preview.classList.add("drag-preview");
+    preview.setAttribute("width", boardW * CELL);
+    preview.setAttribute("height", boardH * CELL);
+    preview.style.overflow = "visible";
 
-// ---------- SNAP & PLACE ----------
-function snapAndPlace(p) {
-    const rect = boardSVG.getBoundingClientRect();
+    const g = createPieceGroup(piece, CELL);
+    preview.appendChild(g);
+    dragLayer.appendChild(preview);
+
+    return g;
+}
+
+// ---------- DRAG START ----------
+function startDragFromTray(piece, event, trayX, trayY) {
+    dragged = {
+        piece,
+        preview: createDragPreview(piece)
+    };
+
+    dragOrigin = { placed: false };
+
+    const trayRect = piecesSVG.getBoundingClientRect();
+    offset.x = event.clientX - (trayRect.left + trayX);
+    offset.y = event.clientY - (trayRect.top + trayY);
+
+    updateDragPreviewPosition(event.clientX, event.clientY);
+}
+
+function startDragFromBoard(piece, event) {
+    dragged = {
+        piece,
+        preview: createDragPreview(piece)
+    };
+
+    dragOrigin = {
+        placed: true,
+        boardX: piece.boardX,
+        boardY: piece.boardY
+    };
+
+    const boardRect = boardSVG.getBoundingClientRect();
     const scale = parseFloat(boardSVG.dataset.scale || 1);
+    offset.x = event.clientX - (boardRect.left + piece.boardX * CELL * scale);
+    offset.y = event.clientY - (boardRect.top + piece.boardY * CELL * scale);
 
-    // coordonnées du centre de la pièce en pixels écran
-    const screenX = p.x;
-    const screenY = p.y;
+    removePieceFromBoard(piece);
+    drawBoard();
+    drawPieces();
+    updateDragPreviewPosition(event.clientX, event.clientY);
+}
 
-    // conversion écran → coordonnées plateau
-    const localX = (screenX - rect.left) / scale;
-    const localY = (screenY - rect.top) / scale;
+// ---------- DRAG HELPERS ----------
+function updateDragPreviewPosition(clientX, clientY) {
+    if (!dragged) return;
+    dragged.preview.setAttribute(
+        "transform",
+        `translate(${clientX - offset.x},${clientY - offset.y})`
+    );
+}
 
-    const gx = Math.round(localX / CELL);
-    const gy = Math.round(localY / CELL);
-
-    // 🧹 1. Limpiar posición anterior de la pieza
+function removePieceFromBoard(piece) {
     for (let y = 0; y < boardH; y++) {
         for (let x = 0; x < boardW; x++) {
-            if (board[y][x] === p.id) {
+            if (board[y][x] === piece.id) {
                 board[y][x] = 0;
             }
         }
     }
 
-    // 🔍 2. Verificar si se puede colocar
-    let canPlace = true;
-    for (const [dx, dy] of p.shape) {
+    piece.placed = false;
+}
+
+// ---------- PLACEMENT ----------
+function canPlaceAt(piece, gx, gy) {
+    for (const [dx, dy] of piece.shape) {
         const x = gx + dx;
         const y = gy + dy;
 
-        if (
-            x < 0 || x >= boardW ||
-            y < 0 || y >= boardH ||
-            board[y][x] !== 0
-        ) {
-            canPlace = false;
-            break;
+        if (x < 0 || x >= boardW || y < 0 || y >= boardH || board[y][x] !== 0) {
+            return false;
         }
     }
 
-    // ❌ 3. Si NO encaja → volver al plato
-    if (!canPlace) {
-        p.placed = false;
-        p.x = 20;
-        p.y = p.id * 70;
+    return true;
+}
 
-        if (p.g) {
-            p.g.setAttribute("transform", `translate(${p.x},${p.y})`);
-        }
-
-        drawBoard();
-        return;
+function placePieceOnBoard(piece, gx, gy) {
+    for (const [dx, dy] of piece.shape) {
+        board[gy + dy][gx + dx] = piece.id;
     }
 
-    // ✅ 4. Colocar en nueva posición
-    for (const [dx, dy] of p.shape) {
-        board[gy + dy][gx + dx] = p.id;
+    piece.boardX = gx;
+    piece.boardY = gy;
+    piece.placed = true;
+}
+
+// ---------- DRAG ----------
+document.onpointermove = e => {
+    if (!dragged) return;
+    updateDragPreviewPosition(e.clientX, e.clientY);
+};
+
+document.onpointerup = e => {
+    if (!dragged) return;
+    snapAndPlace(dragged.piece, e.clientX, e.clientY);
+};
+
+// ---------- SNAP & PLACE ----------
+function snapAndPlace(piece, clientX, clientY) {
+    const rect = boardSVG.getBoundingClientRect();
+    const scale = parseFloat(boardSVG.dataset.scale || 1);
+
+    const localX = (clientX - offset.x - rect.left) / scale;
+    const localY = (clientY - offset.y - rect.top) / scale;
+
+    const gx = Math.round(localX / CELL);
+    const gy = Math.round(localY / CELL);
+
+    const fits = canPlaceAt(piece, gx, gy);
+
+    if (fits) {
+        placePieceOnBoard(piece, gx, gy);
+    } else if (dragOrigin?.placed) {
+        placePieceOnBoard(piece, dragOrigin.boardX, dragOrigin.boardY);
+    } else {
+        piece.placed = false;
     }
 
-    p.placed = true;
+    dragged = null;
+    dragOrigin = null;
+    dragLayer.innerHTML = "";
 
     drawBoard();
+    drawPieces();
     checkWin();
 }
+
 // ---------- WIN ----------
 function checkWin() {
     for (let y = 0; y < boardH; y++) {
@@ -284,7 +343,7 @@ function checkWin() {
             if (board[y][x] === 0) return;
         }
     }
-    alert("🎉 Victoire !");
+    alert("Victoire !");
 }
 
 // ---------- UI ----------

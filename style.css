@@ -68,6 +68,11 @@ svg {
 
 }
 
+.drag-preview {
+    background: transparent;
+    border-radius: 0;
+}
+
 /*style de chaque pieces lors du curseur*/
 .piece rect {
     stroke: #222;
