@@ -81,6 +81,8 @@ svg {
 }
 
 #pieces {
-    overflow-y: auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-height: 90vh;
 }
 

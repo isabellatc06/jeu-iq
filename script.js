@@ -25,6 +25,22 @@ document.body.appendChild(dragLayer);
 
 // ---------- UTILS ----------
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const shuffle = array => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = rand(0, i);
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+const normalizeShape = cells => {
+    const minX = Math.min(...cells.map(([x]) => x));
+    const minY = Math.min(...cells.map(([, y]) => y));
+    return cells
+        .map(([x, y]) => [x - minX, y - minY])
+        .sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+};
+const rotateShape = shape => normalizeShape(shape.map(([x, y]) => [-y, x]));
+const flipShape = shape => normalizeShape(shape.map(([x, y]) => [-x, y]));
 
 // ---------- GAME ----------
 function generateGame(w, h) {
@@ -95,7 +111,7 @@ function drawBoard() {
 
             g.ondblclick = () => {
                 removePieceFromBoard(piece);
-                piece.shape = piece.shape.map(([x, y]) => [-y, x]);
+                piece.shape = rotateShape(piece.shape);
 
                 if (canPlaceAt(piece, piece.boardX, piece.boardY)) {
                     placePieceOnBoard(piece, piece.boardX, piece.boardY);
@@ -117,33 +133,82 @@ function generateSimplePieces(w, h, obs) {
     const generatedPieces = [];
     let id = 1;
 
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-            if (!used[y][x]) {
-                const shape = [[0, 0]];
-                used[y][x] = true;
+    const inBounds = (x, y) => x >= 0 && x < w && y >= 0 && y < h;
+    const directions = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1]
+    ];
 
-                if (x + 1 < w && !used[y][x + 1]) {
-                    shape.push([1, 0]);
-                    used[y][x + 1] = true;
+    function getFreeCells() {
+        const cells = [];
+        for (let y = 0; y < h; y++) {
+            for (let x = 0; x < w; x++) {
+                if (!used[y][x]) {
+                    cells.push([x, y]);
                 }
-                if (y + 1 < h && !used[y + 1][x]) {
-                    shape.push([0, 1]);
-                    used[y + 1][x] = true;
-                }
-
-                generatedPieces.push({
-                    id,
-                    shape,
-                    placed: false,
-                    boardX: 0,
-                    boardY: 0,
-                    color: `hsl(${id * 60}, 70%, 60%)`
-                });
-
-                id++;
             }
         }
+        return cells;
+    }
+
+    function buildPiece(startX, startY, targetSize) {
+        const pieceCells = [[startX, startY]];
+        const chosen = new Set([`${startX},${startY}`]);
+        let frontier = [[startX, startY]];
+
+        while (pieceCells.length < targetSize && frontier.length > 0) {
+            const [baseX, baseY] = frontier[rand(0, frontier.length - 1)];
+            const neighbors = shuffle(
+                directions
+                    .map(([dx, dy]) => [baseX + dx, baseY + dy])
+                    .filter(([x, y]) => inBounds(x, y) && !used[y][x] && !chosen.has(`${x},${y}`))
+            );
+
+            if (neighbors.length === 0) {
+                frontier = frontier.filter(([x, y]) => !(x === baseX && y === baseY));
+                continue;
+            }
+
+            const [nextX, nextY] = neighbors[0];
+            pieceCells.push([nextX, nextY]);
+            chosen.add(`${nextX},${nextY}`);
+            frontier.push([nextX, nextY]);
+        }
+
+        pieceCells.forEach(([x, y]) => {
+            used[y][x] = true;
+        });
+
+        return normalizeShape(pieceCells);
+    }
+
+    while (true) {
+        const freeCells = getFreeCells();
+        if (freeCells.length === 0) break;
+
+        const [startX, startY] = freeCells[rand(0, freeCells.length - 1)];
+
+        let targetSize = rand(3, 5);
+        if (freeCells.length <= 5) {
+            targetSize = freeCells.length;
+        } else if (freeCells.length - targetSize === 1 || freeCells.length - targetSize === 2) {
+            targetSize = Math.max(3, targetSize - 2);
+        }
+
+        const shape = buildPiece(startX, startY, targetSize);
+
+        generatedPieces.push({
+            id,
+            shape,
+            placed: false,
+            boardX: 0,
+            boardY: 0,
+            color: `hsl(${id * 47}, 70%, 60%)`
+        });
+
+        id++;
     }
 
     return generatedPieces;
@@ -152,14 +217,22 @@ function generateSimplePieces(w, h, obs) {
 // ---------- DRAW PIECES ----------
 function drawPieces() {
     piecesSVG.innerHTML = "";
-    piecesSVG.setAttribute("width", 300);
-    piecesSVG.setAttribute("height", Math.max(400, pieces.length * 80));
+    const trayRowHeight = 80;
+    const trayColWidth = 110;
+    const trayPadding = 20;
+    const availableHeight = Math.max(400, boardH * CELL);
+    const rowsPerColumn = Math.max(1, Math.floor((availableHeight - trayPadding * 2) / trayRowHeight));
+    const loosePieces = pieces.filter(piece => !piece.placed);
+    const columnCount = Math.max(1, Math.ceil(loosePieces.length / rowsPerColumn));
 
-    pieces
-        .filter(piece => !piece.placed)
-        .forEach((piece, index) => {
-            const trayX = 20;
-            const trayY = index * 70;
+    piecesSVG.setAttribute("width", trayPadding * 2 + columnCount * trayColWidth);
+    piecesSVG.setAttribute("height", availableHeight);
+
+    loosePieces.forEach((piece, index) => {
+            const column = Math.floor(index / rowsPerColumn);
+            const row = index % rowsPerColumn;
+            const trayX = trayPadding + column * trayColWidth;
+            const trayY = trayPadding + row * trayRowHeight;
             const g = createPieceGroup(piece, CELL / 2);
             g.setAttribute("transform", `translate(${trayX},${trayY})`);
 
@@ -168,12 +241,18 @@ function drawPieces() {
             };
 
             g.ondblclick = () => {
-                piece.shape = piece.shape.map(([x, y]) => [-y, x]);
+                piece.shape = rotateShape(piece.shape);
+                drawPieces();
+            };
+
+            g.oncontextmenu = e => {
+                e.preventDefault();
+                piece.shape = flipShape(piece.shape);
                 drawPieces();
             };
 
             piecesSVG.appendChild(g);
-        });
+    });
 }
 
 // ---------- SVG HELPERS ----------
@@ -259,6 +338,15 @@ function updateDragPreviewPosition(clientX, clientY) {
     );
 }
 
+function isInsideRect(clientX, clientY, rect) {
+    return (
+        clientX >= rect.left &&
+        clientX <= rect.right &&
+        clientY >= rect.top &&
+        clientY <= rect.bottom
+    );
+}
+
 function removePieceFromBoard(piece) {
     for (let y = 0; y < boardH; y++) {
         for (let x = 0; x < boardW; x++) {
@@ -308,6 +396,17 @@ document.onpointerup = e => {
 
 // ---------- SNAP & PLACE ----------
 function snapAndPlace(piece, clientX, clientY) {
+    const trayRect = piecesSVG.getBoundingClientRect();
+    if (isInsideRect(clientX, clientY, trayRect)) {
+        piece.placed = false;
+        dragged = null;
+        dragOrigin = null;
+        dragLayer.innerHTML = "";
+        drawBoard();
+        drawPieces();
+        return;
+    }
+
     const rect = boardSVG.getBoundingClientRect();
     const scale = parseFloat(boardSVG.dataset.scale || 1);
 
@@ -346,10 +445,31 @@ function checkWin() {
     alert("Victoire !");
 }
 
+function resetPlacedPieces() {
+    board = initBoard(boardW, boardH, obstacles);
+
+    pieces.forEach(piece => {
+        piece.placed = false;
+        piece.boardX = 0;
+        piece.boardY = 0;
+    });
+
+    dragged = null;
+    dragOrigin = null;
+    dragLayer.innerHTML = "";
+
+    drawBoard();
+    drawPieces();
+}
+
 // ---------- UI ----------
 document.getElementById("generate").onclick = () => {
     generateGame(
         +document.getElementById("w").value,
         +document.getElementById("h").value
     );
+};
+
+document.getElementById("reset-placed").onclick = () => {
+    resetPlacedPieces();
 };
