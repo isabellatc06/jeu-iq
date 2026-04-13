@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body class="startup">
 
     <h1>🧩 Puzzle IQ</h1>
 
@@ -15,10 +15,11 @@
         Largeur <input id="w" type="number" value="6" min="4" max="10">
         Hauteur <input id="h" type="number" value="6" min="4" max="10">
         <button id="reset-placed">Tout remettre</button>
-        <button id="generate">Générer</button>
+        <button id="generate">Commencer</button>
     </div>
 
-    <p class="hint">Choisis la taille puis clique sur Générer</p> <!--conteneur du jeu (tableau + tableau de pieces)-->
+    <p class="hint">Choisis la taille puis clique sur Commencer</p>
+    <!--conteneur du jeu (tableau + tableau de pieces)-->
 
     <div class="game">
         <svg id="board"></svg> <!--grille du tableau-->

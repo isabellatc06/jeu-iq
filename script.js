@@ -9,9 +9,17 @@ let pieces = [];
 let dragged = null;
 let dragOrigin = null;
 let offset = { x: 0, y: 0 };
+let gameWon = false;
+let winTimer = null;
+let returnToStartupTimer = null;
 
 const boardSVG = document.getElementById("board");
 const piecesSVG = document.getElementById("pieces");
+const generateButton = document.getElementById("generate");
+const resetButton = document.getElementById("reset-placed");
+const hintText = document.querySelector(".hint");
+
+let gameStarted = false;
 
 const dragLayer = document.createElement("div");
 dragLayer.style.position = "fixed";
@@ -39,6 +47,14 @@ const normalizeShape = cells => {
         .map(([x, y]) => [x - minX, y - minY])
         .sort((a, b) => a[1] - b[1] || a[0] - b[0]);
 };
+const getShapeBounds = shape => {
+    const maxX = Math.max(...shape.map(([x]) => x));
+    const maxY = Math.max(...shape.map(([, y]) => y));
+    return {
+        width: maxX + 1,
+        height: maxY + 1
+    };
+};
 const rotateShape = shape => normalizeShape(shape.map(([x, y]) => [-y, x]));
 const flipShape = shape => normalizeShape(shape.map(([x, y]) => [-x, y]));
 
@@ -46,6 +62,10 @@ const flipShape = shape => normalizeShape(shape.map(([x, y]) => [-x, y]));
 function generateGame(w, h) {
     boardW = w;
     boardH = h;
+    gameWon = false;
+    clearTimeout(winTimer);
+    clearTimeout(returnToStartupTimer);
+    hideWinMessage();
 
     obstacles = generateObstacles(w, h);
     board = initBoard(w, h, obstacles);
@@ -53,6 +73,16 @@ function generateGame(w, h) {
 
     drawBoard();
     drawPieces();
+}
+
+function setGameStartedUI(started) {
+    gameStarted = started;
+    document.body.classList.toggle("startup", !started);
+    generateButton.textContent = started ? "Générer nouveau" : "Commencer";
+    resetButton.style.display = started ? "inline-block" : "none";
+    hintText.textContent = started
+        ? "Clique une pièce pour la prendre, re-clique pour la poser. Clic droit en l'air: rotation."
+        : "Choisis la taille puis clique sur Commencer";
 }
 
 // ---------- OBSTACLES ----------
@@ -106,21 +136,10 @@ function drawBoard() {
             g.setAttribute("transform", `translate(${piece.boardX * CELL},${piece.boardY * CELL})`);
 
             g.onpointerdown = e => {
+                if (dragged) return;
+                e.preventDefault();
+                e.stopPropagation();
                 startDragFromBoard(piece, e);
-            };
-
-            g.ondblclick = () => {
-                removePieceFromBoard(piece);
-                piece.shape = rotateShape(piece.shape);
-
-                if (canPlaceAt(piece, piece.boardX, piece.boardY)) {
-                    placePieceOnBoard(piece, piece.boardX, piece.boardY);
-                } else {
-                    piece.placed = false;
-                }
-
-                drawBoard();
-                drawPieces();
             };
 
             boardSVG.appendChild(g);
@@ -205,6 +224,7 @@ function generateSimplePieces(w, h, obs) {
             placed: false,
             boardX: 0,
             boardY: 0,
+            trayIndex: generatedPieces.length,
             color: `hsl(${id * 47}, 70%, 60%)`
         });
 
@@ -220,38 +240,58 @@ function drawPieces() {
     const trayRowHeight = 80;
     const trayColWidth = 110;
     const trayPadding = 20;
-    const availableHeight = Math.max(400, boardH * CELL);
-    const rowsPerColumn = Math.max(1, Math.floor((availableHeight - trayPadding * 2) / trayRowHeight));
-    const loosePieces = pieces.filter(piece => !piece.placed);
-    const columnCount = Math.max(1, Math.ceil(loosePieces.length / rowsPerColumn));
+    const trayInnerWidth = trayColWidth - 20;
+    const trayInnerHeight = trayRowHeight - 20;
+    const preferredHeight = Math.max(280, boardH * CELL);
+    const rowsPerColumn = Math.max(1, Math.floor((preferredHeight - trayPadding * 2) / trayRowHeight));
+    const visibleRows = Math.max(1, Math.min(rowsPerColumn, pieces.length));
+    const columnCount = Math.max(1, Math.ceil(pieces.length / rowsPerColumn));
+    const trayWidth = trayPadding + columnCount * trayColWidth - 10;
+    const trayHeight = trayPadding + visibleRows * trayRowHeight;
 
-    piecesSVG.setAttribute("width", trayPadding * 2 + columnCount * trayColWidth);
-    piecesSVG.setAttribute("height", availableHeight);
+    piecesSVG.setAttribute("width", trayWidth);
+    piecesSVG.setAttribute("height", trayHeight);
 
-    loosePieces.forEach((piece, index) => {
-            const column = Math.floor(index / rowsPerColumn);
-            const row = index % rowsPerColumn;
-            const trayX = trayPadding + column * trayColWidth;
-            const trayY = trayPadding + row * trayRowHeight;
-            const g = createPieceGroup(piece, CELL / 2);
-            g.setAttribute("transform", `translate(${trayX},${trayY})`);
+    pieces.forEach(piece => {
+        const column = Math.floor(piece.trayIndex / rowsPerColumn);
+        const row = piece.trayIndex % rowsPerColumn;
+        const trayX = trayPadding + column * trayColWidth;
+        const trayY = trayPadding + row * trayRowHeight;
+        const bounds = getShapeBounds(piece.shape);
+        const unit = Math.min(
+            CELL / 2,
+            trayInnerWidth / bounds.width,
+            trayInnerHeight / bounds.height
+        );
+        const pieceWidth = bounds.width * unit;
+        const pieceHeight = bounds.height * unit;
+        const offsetX = trayX + (trayInnerWidth - pieceWidth) / 2;
+        const offsetY = trayY + (trayInnerHeight - pieceHeight) / 2;
 
-            g.onpointerdown = e => {
-                startDragFromTray(piece, e, trayX, trayY);
-            };
+        const slot = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        slot.setAttribute("x", trayX - 10);
+        slot.setAttribute("y", trayY - 10);
+        slot.setAttribute("width", trayInnerWidth);
+        slot.setAttribute("height", trayInnerHeight);
+        slot.setAttribute("rx", 14);
+        slot.setAttribute("class", "tray-slot");
+        piecesSVG.appendChild(slot);
 
-            g.ondblclick = () => {
-                piece.shape = rotateShape(piece.shape);
-                drawPieces();
-            };
+        if (piece.placed || (dragged && dragged.piece === piece)) {
+            return;
+        }
 
-            g.oncontextmenu = e => {
-                e.preventDefault();
-                piece.shape = flipShape(piece.shape);
-                drawPieces();
-            };
+        const g = createPieceGroup(piece, unit);
+        g.setAttribute("transform", `translate(${offsetX},${offsetY})`);
 
-            piecesSVG.appendChild(g);
+        g.onpointerdown = e => {
+            if (dragged) return;
+            e.preventDefault();
+            e.stopPropagation();
+            startDragFromTray(piece, e, trayX, trayY);
+        };
+
+        piecesSVG.appendChild(g);
     });
 }
 
@@ -282,16 +322,23 @@ function createDragPreview(piece) {
     preview.setAttribute("width", boardW * CELL);
     preview.setAttribute("height", boardH * CELL);
     preview.style.overflow = "visible";
+    preview.style.position = "fixed";
+    preview.style.left = "0";
+    preview.style.top = "0";
+    preview.style.transformOrigin = "top left";
+    preview.style.pointerEvents = "none";
 
     const g = createPieceGroup(piece, CELL);
     preview.appendChild(g);
     dragLayer.appendChild(preview);
 
-    return g;
+    return preview;
 }
 
 // ---------- DRAG START ----------
 function startDragFromTray(piece, event, trayX, trayY) {
+    if (gameWon) return;
+
     dragged = {
         piece,
         preview: createDragPreview(piece)
@@ -304,9 +351,12 @@ function startDragFromTray(piece, event, trayX, trayY) {
     offset.y = event.clientY - (trayRect.top + trayY);
 
     updateDragPreviewPosition(event.clientX, event.clientY);
+    drawPieces();
 }
 
 function startDragFromBoard(piece, event) {
+    if (gameWon) return;
+
     dragged = {
         piece,
         preview: createDragPreview(piece)
@@ -329,12 +379,21 @@ function startDragFromBoard(piece, event) {
     updateDragPreviewPosition(event.clientX, event.clientY);
 }
 
+function rotateDraggedPiece(clientX, clientY) {
+    if (!dragged) return;
+
+    dragged.piece.shape = rotateShape(dragged.piece.shape);
+    dragged.preview = createDragPreview(dragged.piece);
+    updateDragPreviewPosition(clientX, clientY);
+}
+
 // ---------- DRAG HELPERS ----------
 function updateDragPreviewPosition(clientX, clientY) {
     if (!dragged) return;
+    const scale = parseFloat(boardSVG.dataset.scale || 1);
     dragged.preview.setAttribute(
-        "transform",
-        `translate(${clientX - offset.x},${clientY - offset.y})`
+        "style",
+        `position: fixed; left: 0; top: 0; overflow: visible; pointer-events: none; transform-origin: top left; transform: translate(${clientX - offset.x}px, ${clientY - offset.y}px) scale(${scale});`
     );
 }
 
@@ -360,12 +419,23 @@ function removePieceFromBoard(piece) {
 }
 
 // ---------- PLACEMENT ----------
+function isBlockedCell(x, y) {
+    return (
+        x < 0 ||
+        x >= boardW ||
+        y < 0 ||
+        y >= boardH ||
+        obstacles[y][x] === -1 ||
+        board[y][x] !== 0
+    );
+}
+
 function canPlaceAt(piece, gx, gy) {
     for (const [dx, dy] of piece.shape) {
         const x = gx + dx;
         const y = gy + dy;
 
-        if (x < 0 || x >= boardW || y < 0 || y >= boardH || board[y][x] !== 0) {
+        if (isBlockedCell(x, y)) {
             return false;
         }
     }
@@ -389,9 +459,16 @@ document.onpointermove = e => {
     updateDragPreviewPosition(e.clientX, e.clientY);
 };
 
-document.onpointerup = e => {
-    if (!dragged) return;
+document.onpointerdown = e => {
+    if (!dragged || e.button !== 0) return;
+    e.preventDefault();
     snapAndPlace(dragged.piece, e.clientX, e.clientY);
+};
+
+document.oncontextmenu = e => {
+    if (!dragged) return;
+    e.preventDefault();
+    rotateDraggedPiece(e.clientX, e.clientY);
 };
 
 // ---------- SNAP & PLACE ----------
@@ -436,16 +513,82 @@ function snapAndPlace(piece, clientX, clientY) {
 }
 
 // ---------- WIN ----------
+function showWinMessage() {
+    let message = document.getElementById("win-message");
+
+    if (!message) {
+        message = document.createElement("div");
+        message.id = "win-message";
+        message.className = "win-message";
+        message.innerHTML = "\n            <strong>Bravo !</strong> Puzzle complete.\n            <button id=\"win-new-game\" type=\"button\">Retour accueil</button>\n        ";
+        document.body.appendChild(message);
+
+        const newGameButton = message.querySelector("#win-new-game");
+        newGameButton.onclick = () => returnToStartup();
+    }
+
+    message.classList.add("show");
+}
+
+function hideWinMessage() {
+    const message = document.getElementById("win-message");
+    if (!message) return;
+    message.classList.remove("show");
+}
+
+function returnToStartup() {
+    clearTimeout(winTimer);
+    clearTimeout(returnToStartupTimer);
+
+    dragged = null;
+    dragOrigin = null;
+    dragLayer.innerHTML = "";
+    gameWon = false;
+
+    board = [];
+    obstacles = [];
+    pieces = [];
+    boardW = 0;
+    boardH = 0;
+    boardSVG.innerHTML = "";
+    piecesSVG.innerHTML = "";
+    boardSVG.removeAttribute("width");
+    boardSVG.removeAttribute("height");
+    piecesSVG.removeAttribute("width");
+    piecesSVG.removeAttribute("height");
+
+    hideWinMessage();
+    setGameStartedUI(false);
+}
+
 function checkWin() {
+    if (gameWon) return;
+
     for (let y = 0; y < boardH; y++) {
         for (let x = 0; x < boardW; x++) {
             if (board[y][x] === 0) return;
         }
     }
-    alert("Victoire !");
+
+    gameWon = true;
+    clearTimeout(winTimer);
+    clearTimeout(returnToStartupTimer);
+    winTimer = setTimeout(() => {
+        requestAnimationFrame(() => {
+            showWinMessage();
+            returnToStartupTimer = setTimeout(() => {
+                returnToStartup();
+            }, 1800);
+        });
+    }, 120);
 }
 
 function resetPlacedPieces() {
+    gameWon = false;
+    clearTimeout(winTimer);
+    clearTimeout(returnToStartupTimer);
+    hideWinMessage();
+
     board = initBoard(boardW, boardH, obstacles);
 
     pieces.forEach(piece => {
@@ -463,13 +606,19 @@ function resetPlacedPieces() {
 }
 
 // ---------- UI ----------
-document.getElementById("generate").onclick = () => {
+generateButton.onclick = () => {
+    if (!gameStarted) {
+        setGameStartedUI(true);
+    }
+
     generateGame(
         +document.getElementById("w").value,
         +document.getElementById("h").value
     );
 };
 
-document.getElementById("reset-placed").onclick = () => {
+resetButton.onclick = () => {
     resetPlacedPieces();
 };
+
+setGameStartedUI(false);
