@@ -18,6 +18,21 @@ const piecesSVG = document.getElementById("pieces");
 const generateButton = document.getElementById("generate");
 const resetButton = document.getElementById("reset-placed");
 const hintText = document.querySelector(".hint");
+const difficultySelect = document.getElementById("difficulty");
+const widthInput = document.getElementById("w");
+const heightInput = document.getElementById("h");
+const obstacleRatioInput = document.getElementById("obstacle-ratio");
+const pieceMinInput = document.getElementById("piece-min");
+const pieceMaxInput = document.getElementById("piece-max");
+
+const difficultyPresets = {
+    easy: { w: 5, h: 5, obstacleRatio: 0.1, pieceMin: 3, pieceMax: 4, label: "Facile" },
+    normal: { w: 6, h: 6, obstacleRatio: 0.15, pieceMin: 3, pieceMax: 5, label: "Moyen" },
+    hard: { w: 8, h: 8, obstacleRatio: 0.2, pieceMin: 4, pieceMax: 6, label: "Difficile" },
+    custom: { w: 6, h: 6, obstacleRatio: 0.15, pieceMin: 3, pieceMax: 5, label: "Personnalise" }
+};
+
+let gameSettings = { ...difficultyPresets.normal };
 
 let gameStarted = false;
 
@@ -67,9 +82,9 @@ function generateGame(w, h) {
     clearTimeout(returnToStartupTimer);
     hideWinMessage();
 
-    obstacles = generateObstacles(w, h);
+    obstacles = generateObstacles(w, h, gameSettings.obstacleRatio);
     board = initBoard(w, h, obstacles);
-    pieces = generateSimplePieces(w, h, obstacles);
+    pieces = generateSimplePieces(w, h, obstacles, gameSettings.pieceMin, gameSettings.pieceMax);
 
     drawBoard();
     drawPieces();
@@ -80,15 +95,72 @@ function setGameStartedUI(started) {
     document.body.classList.toggle("startup", !started);
     generateButton.textContent = started ? "Générer nouveau" : "Commencer";
     resetButton.style.display = started ? "inline-block" : "none";
-    hintText.textContent = started
-        ? "Clique une pièce pour la prendre, re-clique pour la poser. Clic droit en l'air: rotation."
-        : "Choisis la taille puis clique sur Commencer";
+    hintText.style.display = started ? "none" : "block";
+    hintText.textContent = "Choisis une difficulte, puis clique sur Commencer";
+
+}
+
+function updateSettingsFromDifficulty() {
+    const selected = difficultyPresets[difficultySelect.value] || difficultyPresets.normal;
+    gameSettings = { ...selected };
+
+    const isCustom = difficultySelect.value === "custom";
+    widthInput.disabled = !isCustom;
+    heightInput.disabled = !isCustom;
+    obstacleRatioInput.disabled = !isCustom;
+    pieceMinInput.disabled = !isCustom;
+    pieceMaxInput.disabled = !isCustom;
+
+    if (!isCustom) {
+        widthInput.value = selected.w;
+        heightInput.value = selected.h;
+        obstacleRatioInput.value = Math.round(selected.obstacleRatio * 100);
+        pieceMinInput.value = selected.pieceMin;
+        pieceMaxInput.value = selected.pieceMax;
+    }
+
+    if (!gameStarted) {
+        hintText.textContent = "Choisis une difficulte, puis clique sur Commencer";
+    }
+
+}
+
+function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
+function updateSettingsFromCustomInputs() {
+    const w = clamp(+widthInput.value || 6, 4, 10);
+    const h = clamp(+heightInput.value || 6, 4, 10);
+    const obstaclePercent = clamp(+obstacleRatioInput.value || 15, 5, 35);
+    let pieceMin = clamp(+pieceMinInput.value || 3, 2, 6);
+    let pieceMax = clamp(+pieceMaxInput.value || 5, 3, 7);
+
+    if (pieceMin > pieceMax) {
+        pieceMax = pieceMin;
+    }
+
+    widthInput.value = w;
+    heightInput.value = h;
+    obstacleRatioInput.value = obstaclePercent;
+    pieceMinInput.value = pieceMin;
+    pieceMaxInput.value = pieceMax;
+
+    gameSettings = {
+        w,
+        h,
+        obstacleRatio: obstaclePercent / 100,
+        pieceMin,
+        pieceMax,
+        label: "Personnalise"
+    };
+
 }
 
 // ---------- OBSTACLES ----------
-function generateObstacles(w, h) {
+function generateObstacles(w, h, obstacleRatio = 0.15) {
     const grid = Array.from({ length: h }, () => Array(w).fill(0));
-    const count = Math.floor(w * h * 0.15);
+    const count = Math.floor(w * h * obstacleRatio);
 
     for (let i = 0; i < count; i++) {
         grid[rand(0, h - 1)][rand(0, w - 1)] = -1;
@@ -147,7 +219,7 @@ function drawBoard() {
 }
 
 // ---------- PIECES ----------
-function generateSimplePieces(w, h, obs) {
+function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
     const used = obs.map(row => row.map(value => value === -1));
     const generatedPieces = [];
     let id = 1;
@@ -209,11 +281,11 @@ function generateSimplePieces(w, h, obs) {
 
         const [startX, startY] = freeCells[rand(0, freeCells.length - 1)];
 
-        let targetSize = rand(3, 5);
+        let targetSize = rand(pieceMin, pieceMax);
         if (freeCells.length <= 5) {
             targetSize = freeCells.length;
         } else if (freeCells.length - targetSize === 1 || freeCells.length - targetSize === 2) {
-            targetSize = Math.max(3, targetSize - 2);
+            targetSize = Math.max(pieceMin, targetSize - 2);
         }
 
         const shape = buildPiece(startX, startY, targetSize);
@@ -607,13 +679,18 @@ function resetPlacedPieces() {
 
 // ---------- UI ----------
 generateButton.onclick = () => {
+    updateSettingsFromDifficulty();
+    if (difficultySelect.value === "custom") {
+        updateSettingsFromCustomInputs();
+    }
+
     if (!gameStarted) {
         setGameStartedUI(true);
     }
 
     generateGame(
-        +document.getElementById("w").value,
-        +document.getElementById("h").value
+        gameSettings.w,
+        gameSettings.h
     );
 };
 
@@ -621,4 +698,16 @@ resetButton.onclick = () => {
     resetPlacedPieces();
 };
 
+difficultySelect.onchange = () => {
+    updateSettingsFromDifficulty();
+};
+
+[widthInput, heightInput, obstacleRatioInput, pieceMinInput, pieceMaxInput].forEach(input => {
+    input.onchange = () => {
+        if (difficultySelect.value !== "custom") return;
+        updateSettingsFromCustomInputs();
+    };
+});
+
+updateSettingsFromDifficulty();
 setGameStartedUI(false);

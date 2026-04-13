@@ -12,18 +12,79 @@
     <h1>🧩 Puzzle IQ</h1>
 
     <div class="controls"> <!--commandes du jeu (generer, etc)-->
-        Largeur <input id="w" type="number" value="6" min="4" max="10">
-        Hauteur <input id="h" type="number" value="6" min="4" max="10">
-        <button id="reset-placed">Tout remettre</button>
-        <button id="generate">Commencer</button>
+        <div class="controls-grid">
+            <label class="control-item" for="difficulty">
+                <span>Difficulté</span>
+                <select id="difficulty">
+                    <option value="easy">Facile</option>
+                    <option value="normal" selected>Moyen</option>
+                    <option value="hard">Difficile</option>
+                    <option value="custom">Personnalisé</option>
+                </select>
+            </label>
+
+            <label class="control-item" for="w">
+                <span>Largeur</span>
+                <input id="w" type="number" value="6" min="4" max="10">
+            </label>
+
+            <label class="control-item" for="h">
+                <span>Hauteur</span>
+                <input id="h" type="number" value="6" min="4" max="10">
+            </label>
+
+            <label class="control-item" for="obstacle-ratio">
+                <span>Obstacles (%)</span>
+                <input id="obstacle-ratio" type="number" value="15" min="5" max="35" step="1">
+            </label>
+
+            <label class="control-item" for="piece-min">
+                <span>Taille pièce min (cases)</span>
+                <input id="piece-min" type="number" value="3" min="2" max="6" step="1">
+            </label>
+
+            <label class="control-item" for="piece-max">
+                <span>Taille pièce max (cases)</span>
+                <input id="piece-max" type="number" value="5" min="3" max="7" step="1">
+            </label>
+
+            <button id="generate" class="generate-button">Commencer</button>
+        </div>
     </div>
 
     <p class="hint">Choisis la taille puis clique sur Commencer</p>
+
+    <section class="startup-rules">
+        <h2>Règles du jeu</h2>
+        <ul>
+            <li>Clic gauche sur une pièce: tu l'attrapes.</li>
+            <li>Clic gauche une seconde fois: tu la poses.</li>
+            <li>Clic droit pendant qu'elle est en l'air: rotation de 90°.</li>
+            <li>Les cases noires sont interdites.</li>
+            <li>Victoire quand toutes les cases libres sont remplies.</li>
+        </ul>
+    </section>
+
+    <details class="game-rules">
+        <summary>Règles du jeu</summary>
+        <div class="rules-content">
+            <ul>
+                <li>Clic gauche sur une pièce: tu l'attrapes.</li>
+                <li>Clic gauche une seconde fois: tu la poses.</li>
+                <li>Clic droit pendant qu'elle est en l'air: rotation de 90°.</li>
+                <li>Les cases noires sont interdites.</li>
+                <li>Victoire quand toutes les cases libres sont remplies.</li>
+            </ul>
+        </div>
+    </details>
     <!--conteneur du jeu (tableau + tableau de pieces)-->
 
     <div class="game">
         <svg id="board"></svg> <!--grille du tableau-->
-        <svg id="pieces"></svg> <!--place pour les pieces-->
+        <div class="pieces-panel">
+            <svg id="pieces"></svg> <!--place pour les pieces-->
+            <button id="reset-placed" class="reset-button">Réinitialiser les pièces</button>
+        </div>
     </div>
 
     <script src="script.js"></script>
