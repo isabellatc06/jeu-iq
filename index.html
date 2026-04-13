@@ -11,7 +11,7 @@
 
     <h1>🧩 Puzzle IQ</h1>
 
-    <div class="controls"> <!--commandes du jeu (generer, etc)-->
+    <div class="controls"> <!--parametres de partie + action principale-->
         <div class="controls-grid">
             <label class="control-item" for="difficulty">
                 <span>Difficulté</span>
@@ -47,14 +47,16 @@
                 <span>Taille pièce max (cases)</span>
                 <input id="piece-max" type="number" value="5" min="3" max="7" step="1">
             </label>
+        </div>
 
+        <div class="controls-actions"> <!--zone du bouton principal-->
             <button id="generate" class="generate-button">Commencer</button>
         </div>
     </div>
 
-    <p class="hint">Choisis la taille puis clique sur Commencer</p>
+    <p class="hint">Choisis la taille puis clique sur Commencer</p> <!--petit texte d'aide pour l'accueil-->
 
-    <section class="startup-rules">
+    <section class="startup-rules"> <!--règles visibles uniquement à l'accueil-->
         <h2>Règles du jeu</h2>
         <ul>
             <li>Clic gauche sur une pièce: tu l'attrapes.</li>
@@ -65,9 +67,9 @@
         </ul>
     </section>
 
-    <details class="game-rules">
+    <details class="game-rules"> <!--même aide en mode jeu, mais repliable-->
         <summary>Règles du jeu</summary>
-        <div class="rules-content">
+        <div class="rules-content"> <!--contenu visible quand le menu est ouvert-->
             <ul>
                 <li>Clic gauche sur une pièce: tu l'attrapes.</li>
                 <li>Clic gauche une seconde fois: tu la poses.</li>
@@ -77,13 +79,16 @@
             </ul>
         </div>
     </details>
-    <!--conteneur du jeu (tableau + tableau de pieces)-->
+    <!--zone de jeu: plateau + reserve de pieces-->
 
     <div class="game">
         <svg id="board"></svg> <!--grille du tableau-->
-        <div class="pieces-panel">
-            <svg id="pieces"></svg> <!--place pour les pieces-->
-            <button id="reset-placed" class="reset-button">Réinitialiser les pièces</button>
+        <div class="pieces-panel"> <!--colonne de droite avec la reserve et les actions-->
+            <svg id="pieces"></svg> <!--reserve de pieces disponibles-->
+            <div class="pieces-actions"> <!--timer + bouton de reinitialisation-->
+                <p id="timer" class="timer">Temps : 00:00</p>
+                <button id="reset-placed" class="reset-button">Réinitialiser les pièces</button>
+            </div>
         </div>
     </div>
 

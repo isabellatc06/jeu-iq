@@ -1,5 +1,6 @@
 const CELL = 50; // taille du tableau
 
+// Etat principal du jeu: grille, obstacles, pieces et interaction courante.
 let board = [];
 let boardW = 0;
 let boardH = 0;
@@ -12,12 +13,17 @@ let offset = { x: 0, y: 0 };
 let gameWon = false;
 let winTimer = null;
 let returnToStartupTimer = null;
+let timerInterval = null;
+let timerStart = 0;
+let finalElapsedSeconds = 0;
 
+// Elements HTML reutilises dans tout le script.
 const boardSVG = document.getElementById("board");
 const piecesSVG = document.getElementById("pieces");
 const generateButton = document.getElementById("generate");
 const resetButton = document.getElementById("reset-placed");
 const hintText = document.querySelector(".hint");
+const timerDisplay = document.getElementById("timer");
 const difficultySelect = document.getElementById("difficulty");
 const widthInput = document.getElementById("w");
 const heightInput = document.getElementById("h");
@@ -25,6 +31,7 @@ const obstacleRatioInput = document.getElementById("obstacle-ratio");
 const pieceMinInput = document.getElementById("piece-min");
 const pieceMaxInput = document.getElementById("piece-max");
 
+// Presets de difficulte: ils pilotent la taille, le taux d'obstacles et la taille des pieces.
 const difficultyPresets = {
     easy: { w: 5, h: 5, obstacleRatio: 0.1, pieceMin: 3, pieceMax: 4, label: "Facile" },
     normal: { w: 6, h: 6, obstacleRatio: 0.15, pieceMin: 3, pieceMax: 5, label: "Moyen" },
@@ -36,6 +43,7 @@ let gameSettings = { ...difficultyPresets.normal };
 
 let gameStarted = false;
 
+// Couche SVG separee pour afficher la piece en cours de deplacement.
 const dragLayer = document.createElement("div");
 dragLayer.style.position = "fixed";
 dragLayer.style.left = "0";
@@ -47,6 +55,7 @@ dragLayer.style.zIndex = "1000";
 document.body.appendChild(dragLayer);
 
 // ---------- UTILS ----------
+// Petit utilitaire aleatoire utilise pour les obstacles et la construction des pieces.
 const rand = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
 const shuffle = array => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -55,6 +64,8 @@ const shuffle = array => {
     }
     return array;
 };
+
+// Repositionne une forme pour que son coin superieur gauche soit a l'origine.
 const normalizeShape = cells => {
     const minX = Math.min(...cells.map(([x]) => x));
     const minY = Math.min(...cells.map(([, y]) => y));
@@ -62,6 +73,8 @@ const normalizeShape = cells => {
         .map(([x, y]) => [x - minX, y - minY])
         .sort((a, b) => a[1] - b[1] || a[0] - b[0]);
 };
+
+// Retourne la boite englobante d'une piece pour l'aligner correctement dans la reserve.
 const getShapeBounds = shape => {
     const maxX = Math.max(...shape.map(([x]) => x));
     const maxY = Math.max(...shape.map(([, y]) => y));
@@ -74,6 +87,8 @@ const rotateShape = shape => normalizeShape(shape.map(([x, y]) => [-y, x]));
 const flipShape = shape => normalizeShape(shape.map(([x, y]) => [-x, y]));
 
 // ---------- GAME ----------
+// Lance une nouvelle partie avec les parametres courants.
+// Cette fonction reinitialise tout ce qui depend de la grille: plateau logique, pieces, timer.
 function generateGame(w, h) {
     boardW = w;
     boardH = h;
@@ -81,6 +96,7 @@ function generateGame(w, h) {
     clearTimeout(winTimer);
     clearTimeout(returnToStartupTimer);
     hideWinMessage();
+    startGameTimer();
 
     obstacles = generateObstacles(w, h, gameSettings.obstacleRatio);
     board = initBoard(w, h, obstacles);
@@ -90,6 +106,8 @@ function generateGame(w, h) {
     drawPieces();
 }
 
+// Bascule entre l'ecran d'accueil et l'interface de jeu.
+// Le texte du bouton principal change ici, ainsi que la visibilite des aides et du timer.
 function setGameStartedUI(started) {
     gameStarted = started;
     document.body.classList.toggle("startup", !started);
@@ -97,9 +115,51 @@ function setGameStartedUI(started) {
     resetButton.style.display = started ? "inline-block" : "none";
     hintText.style.display = started ? "none" : "block";
     hintText.textContent = "Choisis une difficulte, puis clique sur Commencer";
+    if (timerDisplay) {
+        timerDisplay.style.display = started ? "inline-flex" : "none";
+    }
 
 }
 
+// Convertit un temps en secondes au format mm:ss.
+// Le format est reutilise dans le timer courant et dans le message de victoire.
+function formatTime(totalSeconds) {
+    const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+    return `${minutes}:${seconds}`;
+}
+
+// Met a jour le texte du timer visible.
+// Le timer est affiché seulement pendant la partie, pas sur l'accueil.
+function updateTimer() {
+    if (!timerDisplay) return;
+    const elapsedSeconds = Math.floor((Date.now() - timerStart) / 1000);
+    timerDisplay.textContent = `Temps : ${formatTime(elapsedSeconds)}`;
+}
+
+// Demarre le chronometre au lancement d'une grille.
+// A chaque nouvelle grille, on repart de zero et on relance l'intervalle d'actualisation.
+function startGameTimer() {
+    if (!timerDisplay) return;
+    clearInterval(timerInterval);
+    timerStart = Date.now();
+    finalElapsedSeconds = 0;
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+}
+
+// Arrete le chronometre; option pour remettre l'affichage a zero.
+// On garde parfois le dernier temps visible, notamment quand la victoire est affichee.
+function stopGameTimer(resetDisplay = false) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+    if (timerDisplay && resetDisplay) {
+        timerDisplay.textContent = "Temps : 00:00";
+    }
+}
+
+// Synchronise les champs avec le preset choisi dans le menu.
+// En mode preset, les valeurs sont imposees; en mode personnalise, les champs restent editables.
 function updateSettingsFromDifficulty() {
     const selected = difficultyPresets[difficultySelect.value] || difficultyPresets.normal;
     gameSettings = { ...selected };
@@ -125,10 +185,13 @@ function updateSettingsFromDifficulty() {
 
 }
 
+// Limite une valeur numerique entre deux bornes.
 function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
 }
 
+// Lit les champs personnalises et les convertit en parametres de generation.
+// La validation ici evite des combinaisons incoherentes avant de lancer la partie.
 function updateSettingsFromCustomInputs() {
     const w = clamp(+widthInput.value || 6, 4, 10);
     const h = clamp(+heightInput.value || 6, 4, 10);
@@ -158,6 +221,8 @@ function updateSettingsFromCustomInputs() {
 }
 
 // ---------- OBSTACLES ----------
+// Genere un tableau d'obstacles aleatoires.
+// Les cases a -1 sont des cases noires qui ne peuvent pas etre recouvertes.
 function generateObstacles(w, h, obstacleRatio = 0.15) {
     const grid = Array.from({ length: h }, () => Array(w).fill(0));
     const count = Math.floor(w * h * obstacleRatio);
@@ -169,12 +234,16 @@ function generateObstacles(w, h, obstacleRatio = 0.15) {
 }
 
 // ---------- BOARD ----------
+// Cree la grille logique du plateau, en marquant les obstacles avec -1.
+// Cette grille sert de reference au moment du placement des pieces.
 function initBoard(w, h, obs) {
     return Array.from({ length: h }, (_, y) =>
         Array.from({ length: w }, (_, x) => (obs[y][x] === -1 ? -1 : 0))
     );
 }
 
+// Dessine le plateau et les pieces deja posees.
+// On recree tout le SVG a chaque rafraichissement pour rester simple et previsible.
 function drawBoard() {
     boardSVG.innerHTML = "";
     boardSVG.setAttribute("width", boardW * CELL);
@@ -219,6 +288,8 @@ function drawBoard() {
 }
 
 // ---------- PIECES ----------
+// Construit l'ensemble des pieces a partir des cellules libres.
+// L'algorithme essaie de remplir les cases libres avec des groupes connectes de taille variable.
 function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
     const used = obs.map(row => row.map(value => value === -1));
     const generatedPieces = [];
@@ -307,6 +378,8 @@ function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
 }
 
 // ---------- DRAW PIECES ----------
+// Dessine la reserve de pieces, en les dimensionnant selon leur forme.
+// Chaque piece garde sa place fixe dans la reserve pour eviter les deplacements visuels bizarres.
 function drawPieces() {
     piecesSVG.innerHTML = "";
     const trayRowHeight = 80;
@@ -368,6 +441,7 @@ function drawPieces() {
 }
 
 // ---------- SVG HELPERS ----------
+// Construit un groupe SVG pour une piece donnee.
 function createPieceGroup(piece, unit) {
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.classList.add("piece");
@@ -386,6 +460,7 @@ function createPieceGroup(piece, unit) {
     return g;
 }
 
+// Cree le SVG de previsualisation de la piece pendant le drag.
 function createDragPreview(piece) {
     dragLayer.innerHTML = "";
 
@@ -408,6 +483,7 @@ function createDragPreview(piece) {
 }
 
 // ---------- DRAG START ----------
+// Deplace une piece depuis la reserve vers la couche de drag.
 function startDragFromTray(piece, event, trayX, trayY) {
     if (gameWon) return;
 
@@ -426,6 +502,7 @@ function startDragFromTray(piece, event, trayX, trayY) {
     drawPieces();
 }
 
+// Deplace une piece deja posee sur le plateau vers la couche de drag.
 function startDragFromBoard(piece, event) {
     if (gameWon) return;
 
@@ -451,6 +528,7 @@ function startDragFromBoard(piece, event) {
     updateDragPreviewPosition(event.clientX, event.clientY);
 }
 
+// Tourne la piece en cours de drag de 90 degres.
 function rotateDraggedPiece(clientX, clientY) {
     if (!dragged) return;
 
@@ -460,6 +538,7 @@ function rotateDraggedPiece(clientX, clientY) {
 }
 
 // ---------- DRAG HELPERS ----------
+// Positionne la previsualisation de la piece sous la souris.
 function updateDragPreviewPosition(clientX, clientY) {
     if (!dragged) return;
     const scale = parseFloat(boardSVG.dataset.scale || 1);
@@ -469,6 +548,7 @@ function updateDragPreviewPosition(clientX, clientY) {
     );
 }
 
+// Verifie si un point est a l'interieur d'un rectangle DOM.
 function isInsideRect(clientX, clientY, rect) {
     return (
         clientX >= rect.left &&
@@ -478,6 +558,7 @@ function isInsideRect(clientX, clientY, rect) {
     );
 }
 
+// Retire une piece du plateau logique avant de la deplacer.
 function removePieceFromBoard(piece) {
     for (let y = 0; y < boardH; y++) {
         for (let x = 0; x < boardW; x++) {
@@ -491,6 +572,7 @@ function removePieceFromBoard(piece) {
 }
 
 // ---------- PLACEMENT ----------
+// Decrit une case interdite: bord, obstacle ou case deja occupee.
 function isBlockedCell(x, y) {
     return (
         x < 0 ||
@@ -502,6 +584,7 @@ function isBlockedCell(x, y) {
     );
 }
 
+// Verifie si une piece peut etre placee a une coordonnee de grille donnee.
 function canPlaceAt(piece, gx, gy) {
     for (const [dx, dy] of piece.shape) {
         const x = gx + dx;
@@ -515,6 +598,7 @@ function canPlaceAt(piece, gx, gy) {
     return true;
 }
 
+// Ecrit la piece dans la grille logique et memorise sa position.
 function placePieceOnBoard(piece, gx, gy) {
     for (const [dx, dy] of piece.shape) {
         board[gy + dy][gx + dx] = piece.id;
@@ -531,12 +615,14 @@ document.onpointermove = e => {
     updateDragPreviewPosition(e.clientX, e.clientY);
 };
 
+// Un clic gauche pendant un drag valide la pose ou remet la piece en reserve.
 document.onpointerdown = e => {
     if (!dragged || e.button !== 0) return;
     e.preventDefault();
     snapAndPlace(dragged.piece, e.clientX, e.clientY);
 };
 
+// Le clic droit sert uniquement a pivoter une piece en cours de drag.
 document.oncontextmenu = e => {
     if (!dragged) return;
     e.preventDefault();
@@ -544,6 +630,7 @@ document.oncontextmenu = e => {
 };
 
 // ---------- SNAP & PLACE ----------
+// Essayez d'ancrer la piece sur la reserve ou sur le plateau selon la position de la souris.
 function snapAndPlace(piece, clientX, clientY) {
     const trayRect = piecesSVG.getBoundingClientRect();
     if (isInsideRect(clientX, clientY, trayRect)) {
@@ -585,6 +672,7 @@ function snapAndPlace(piece, clientX, clientY) {
 }
 
 // ---------- WIN ----------
+// Affiche le panneau de victoire avec le temps final.
 function showWinMessage() {
     let message = document.getElementById("win-message");
 
@@ -592,25 +680,33 @@ function showWinMessage() {
         message = document.createElement("div");
         message.id = "win-message";
         message.className = "win-message";
-        message.innerHTML = "\n            <strong>Bravo !</strong> Puzzle complete.\n            <button id=\"win-new-game\" type=\"button\">Retour accueil</button>\n        ";
+        message.innerHTML = `\n            <strong>Bravo !</strong> Puzzle complete.\n            <span id="win-time" class="win-time"></span>\n            <button id=\"win-new-game\" type=\"button\">Retour accueil</button>\n        `;
         document.body.appendChild(message);
 
         const newGameButton = message.querySelector("#win-new-game");
         newGameButton.onclick = () => returnToStartup();
     }
 
+    const winTime = message.querySelector("#win-time");
+    if (winTime) {
+        winTime.textContent = `Temps : ${formatTime(finalElapsedSeconds)}`;
+    }
+
     message.classList.add("show");
 }
 
+// Cache le panneau de victoire s'il existe deja.
 function hideWinMessage() {
     const message = document.getElementById("win-message");
     if (!message) return;
     message.classList.remove("show");
 }
 
+// Reinitialise proprement l'etat du jeu et revient a l'accueil.
 function returnToStartup() {
     clearTimeout(winTimer);
     clearTimeout(returnToStartupTimer);
+    stopGameTimer(true);
 
     dragged = null;
     dragOrigin = null;
@@ -633,6 +729,7 @@ function returnToStartup() {
     setGameStartedUI(false);
 }
 
+// Detecte si toutes les cases libres du plateau sont remplies.
 function checkWin() {
     if (gameWon) return;
 
@@ -643,18 +740,18 @@ function checkWin() {
     }
 
     gameWon = true;
+    finalElapsedSeconds = Math.floor((Date.now() - timerStart) / 1000);
+    stopGameTimer(false);
     clearTimeout(winTimer);
     clearTimeout(returnToStartupTimer);
     winTimer = setTimeout(() => {
         requestAnimationFrame(() => {
             showWinMessage();
-            returnToStartupTimer = setTimeout(() => {
-                returnToStartup();
-            }, 1800);
         });
     }, 120);
 }
 
+// Remet toutes les pieces dans la reserve sans regenerer la grille.
 function resetPlacedPieces() {
     gameWon = false;
     clearTimeout(winTimer);
@@ -678,6 +775,7 @@ function resetPlacedPieces() {
 }
 
 // ---------- UI ----------
+// Bouton principal: commence une partie ou genere une nouvelle grille selon l'etat.
 generateButton.onclick = () => {
     updateSettingsFromDifficulty();
     if (difficultySelect.value === "custom") {
@@ -694,14 +792,17 @@ generateButton.onclick = () => {
     );
 };
 
+// Reinitialise seulement les pieces posees.
 resetButton.onclick = () => {
     resetPlacedPieces();
 };
 
+// Actualise les parametres quand on change de niveau de difficulte.
 difficultySelect.onchange = () => {
     updateSettingsFromDifficulty();
 };
 
+// Autorise les champs personnalises seulement en mode personnalise.
 [widthInput, heightInput, obstacleRatioInput, pieceMinInput, pieceMaxInput].forEach(input => {
     input.onchange = () => {
         if (difficultySelect.value !== "custom") return;
@@ -709,5 +810,6 @@ difficultySelect.onchange = () => {
     };
 });
 
+// Initialise l'UI au chargement.
 updateSettingsFromDifficulty();
 setGameStartedUI(false);
