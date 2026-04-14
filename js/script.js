@@ -9,6 +9,7 @@ import { getElapsedTimeLabel, resetTimer, startTimer, stopTimer } from "./timer.
 import { initUI } from "./ui.js";
 import { checkWin, returnToStartup } from "./win.js";
 
+// Point d'entrée: on relie les modules entre eux puis on initialise le jeu.
 state.handlers.drawBoard = drawBoard;
 state.handlers.drawPieces = drawPieces;
 state.handlers.checkWin = checkWin;

@@ -6,11 +6,13 @@ function formatTime(totalSeconds) {
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
+// Met à jour le texte affiché dans l'interface.
 function renderTimer() {
     if (!refs.timerText) return;
     refs.timerText.textContent = `Temps : ${formatTime(state.elapsedSeconds)}`;
 }
 
+// Revient à un chrono propre pour une nouvelle partie ou un retour accueil.
 export function resetTimer() {
     clearInterval(state.timerInterval);
     state.timerInterval = null;
@@ -19,6 +21,7 @@ export function resetTimer() {
     renderTimer();
 }
 
+// Le chrono démarre à la génération d'une nouvelle grille.
 export function startTimer() {
     clearInterval(state.timerInterval);
     state.timerStartedAt = Date.now();
@@ -31,6 +34,7 @@ export function startTimer() {
     }, 250);
 }
 
+// Fige le temps final lorsque la partie est gagnée ou quittée.
 export function stopTimer() {
     if (state.timerStartedAt) {
         state.elapsedSeconds = Math.floor((Date.now() - state.timerStartedAt) / 1000);

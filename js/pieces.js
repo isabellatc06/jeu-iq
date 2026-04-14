@@ -1,5 +1,6 @@
 import { normalizeShape, rand, shuffle } from "./utils.js";
 
+// Découpe les cases libres du plateau en grosses pièces connectées.
 export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
     const used = obs.map(row => row.map(value => value === -1));
     const generatedPieces = [];
@@ -26,6 +27,7 @@ export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
     }
 
     function buildPiece(startX, startY, targetSize) {
+        // On étend la pièce à partir d'une case de départ en restant connexe.
         const pieceCells = [[startX, startY]];
         const chosen = new Set([`${startX},${startY}`]);
         let frontier = [[startX, startY]];
@@ -63,6 +65,7 @@ export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
         const [startX, startY] = freeCells[rand(0, freeCells.length - 1)];
 
         let targetSize = rand(pieceMin, pieceMax);
+        // Évite de laisser à la fin 1 ou 2 cases impossibles à transformer en vraie pièce.
         if (freeCells.length <= 5) {
             targetSize = freeCells.length;
         } else if (freeCells.length - targetSize === 1 || freeCells.length - targetSize === 2) {

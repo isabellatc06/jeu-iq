@@ -6,6 +6,7 @@ import { startTimer } from "./timer.js";
 import { hideWinMessage } from "./win.js";
 import { clamp } from "./utils.js";
 
+// Lance une nouvelle partie complète: obstacles, grille, pièces, timer et rendu.
 export function generateGame(w, h) {
     state.boardW = w;
     state.boardH = h;
@@ -29,6 +30,7 @@ export function generateGame(w, h) {
     state.handlers.drawPieces();
 }
 
+// Bascule l'interface entre écran d'accueil et partie en cours.
 export function setGameStartedUI(started) {
     state.gameStarted = started;
     document.body.classList.toggle("startup", !started);
@@ -38,6 +40,7 @@ export function setGameStartedUI(started) {
     refs.hintText.textContent = "Choisis une difficulte, puis clique sur Commencer";
 }
 
+// Applique les paramètres du preset choisi et verrouille les champs hors mode custom.
 export function updateSettingsFromDifficulty() {
     const selected = difficultyPresets[refs.difficultySelect.value] || difficultyPresets.normal;
     state.gameSettings = { ...selected };
@@ -62,6 +65,7 @@ export function updateSettingsFromDifficulty() {
     }
 }
 
+// Sécurise les valeurs saisies à la main en mode personnalisé.
 export function updateSettingsFromCustomInputs() {
     const w = clamp(+refs.widthInput.value || 6, 4, 10);
     const h = clamp(+refs.heightInput.value || 6, 4, 10);

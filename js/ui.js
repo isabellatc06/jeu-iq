@@ -2,6 +2,7 @@ import { refs, state } from "./data.js";
 import { generateGame, setGameStartedUI, updateSettingsFromCustomInputs, updateSettingsFromDifficulty } from "./game.js";
 import { resetPlacedPieces } from "./win.js";
 
+// Branche tous les boutons et champs de l'interface.
 export function initUI() {
     refs.generateButton.onclick = () => {
         updateSettingsFromDifficulty();

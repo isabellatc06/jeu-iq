@@ -1,17 +1,20 @@
 import { CELL, refs, state } from "./data.js";
 import { createPieceGroup } from "./svg-helpers.js";
 
+// Initialise la grille logique: 0 = libre, -1 = obstacle.
 export function initBoard(w, h, obs) {
     return Array.from({ length: h }, (_, y) =>
         Array.from({ length: w }, (_, x) => (obs[y][x] === -1 ? -1 : 0))
     );
 }
 
+// Dessine le plateau principal et les pièces déjà posées dessus.
 export function drawBoard() {
     refs.boardSVG.innerHTML = "";
     refs.boardSVG.setAttribute("width", state.boardW * CELL);
     refs.boardSVG.setAttribute("height", state.boardH * CELL);
 
+    // Le plateau est redimensionné pour rester lisible sans dépasser la zone visible.
     const maxW = window.innerWidth * 0.45;
     const maxH = window.innerHeight * 0.7;
     const scale = Math.min(maxW / (state.boardW * CELL), maxH / (state.boardH * CELL), 1);
@@ -33,6 +36,7 @@ export function drawBoard() {
         }
     }
 
+    // Les pièces déjà placées sont redessinées sur le plateau et redeviennent cliquables.
     state.pieces
         .filter(piece => piece.placed)
         .forEach(piece => {

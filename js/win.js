@@ -2,6 +2,7 @@ import { dragLayer, refs, state } from "./data.js";
 import { initBoard } from "./board.js";
 import { getElapsedTimeLabel, resetTimer, stopTimer } from "./timer.js";
 
+// Affiche la fenêtre de victoire avec le temps final de la partie.
 export function showWinMessage() {
     let message = document.getElementById("win-message");
 
@@ -37,6 +38,7 @@ export function hideWinMessage() {
     message.classList.remove("show");
 }
 
+// Remet l'application dans l'état d'accueil, sans plateau actif.
 export function returnToStartup() {
     clearTimeout(state.winTimer);
     clearTimeout(state.returnToStartupTimer);
@@ -64,6 +66,7 @@ export function returnToStartup() {
     state.handlers.setGameStartedUI(false);
 }
 
+// La victoire est atteinte quand il ne reste plus aucune case libre sur la grille.
 export function checkWin() {
     if (state.gameWon) return;
 
@@ -87,6 +90,7 @@ export function checkWin() {
     }, 120);
 }
 
+// Remet seulement les pièces dans la réserve, sans regénérer les obstacles.
 export function resetPlacedPieces() {
     state.gameWon = false;
     clearTimeout(state.winTimer);

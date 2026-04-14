@@ -1,5 +1,6 @@
 import { CELL, dragLayer, state } from "./data.js";
 
+// Construit le groupe SVG d'une pièce, quelle que soit son échelle d'affichage.
 export function createPieceGroup(piece, unit) {
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.classList.add("piece");
@@ -18,6 +19,7 @@ export function createPieceGroup(piece, unit) {
     return g;
 }
 
+// Crée l'aperçu flottant qui suit la souris pendant le drag.
 export function createDragPreview(piece) {
     dragLayer.innerHTML = "";
 

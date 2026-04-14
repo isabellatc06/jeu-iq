@@ -1,5 +1,6 @@
 import { refs, state } from "./data.js";
 
+// Déplace visuellement l'aperçu flottant de la pièce.
 export function updateDragPreviewPosition(clientX, clientY) {
     if (!state.dragged) return;
     const scale = parseFloat(refs.boardSVG.dataset.scale || 1);
@@ -18,6 +19,7 @@ export function isInsideRect(clientX, clientY, rect) {
     );
 }
 
+// Retire une pièce du plateau logique avant de la reprendre à la main.
 export function removePieceFromBoard(piece) {
     for (let y = 0; y < state.boardH; y++) {
         for (let x = 0; x < state.boardW; x++) {

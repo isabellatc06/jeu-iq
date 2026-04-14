@@ -3,6 +3,7 @@ import { rotateShape } from "./utils.js";
 import { removePieceFromBoard, updateDragPreviewPosition } from "./drag-helpers.js";
 import { createDragPreview } from "./svg-helpers.js";
 
+// Démarre un drag depuis la réserve.
 export function startDragFromTray(piece, event, trayX, trayY) {
     if (state.gameWon) return;
 
@@ -21,6 +22,8 @@ export function startDragFromTray(piece, event, trayX, trayY) {
     state.handlers.drawPieces();
 }
 
+// Démarre un drag depuis le plateau.
+// On mémorise l'ancienne position pour pouvoir remettre la pièce si la pose échoue.
 export function startDragFromBoard(piece, event) {
     if (state.gameWon) return;
 
@@ -46,6 +49,7 @@ export function startDragFromBoard(piece, event) {
     updateDragPreviewPosition(event.clientX, event.clientY);
 }
 
+// Rotation à 90° de la pièce actuellement tenue.
 export function rotateDraggedPiece(clientX, clientY) {
     if (!state.dragged) return;
 

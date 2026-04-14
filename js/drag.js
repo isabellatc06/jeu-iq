@@ -1,6 +1,7 @@
 import { state } from "./data.js";
 import { updateDragPreviewPosition } from "./drag-helpers.js";
 
+// Regroupe les événements globaux liés au drag and drop.
 export function initDragHandlers() {
     document.onpointermove = e => {
         if (!state.dragged) return;

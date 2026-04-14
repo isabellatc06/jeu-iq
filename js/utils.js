@@ -9,6 +9,7 @@ export const shuffle = array => {
 };
 
 export const normalizeShape = cells => {
+    // Ramène une forme à l'origine pour comparer et redessiner les pièces proprement.
     const minX = Math.min(...cells.map(([x]) => x));
     const minY = Math.min(...cells.map(([, y]) => y));
     return cells
