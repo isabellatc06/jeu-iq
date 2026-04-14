@@ -11,8 +11,14 @@
 
     <h1>🧩 Puzzle IQ</h1>
 
-    <div class="controls"> <!--parametres de partie + action principale-->
+    <!--
+        Bloc de configuration de la partie.
+        Contient les paramètres de génération (difficulté, taille, obstacles, tailles de pièces)
+        ainsi que le bouton pour démarrer une nouvelle grille.
+    -->
+    <div class="controls">
         <div class="controls-grid">
+            <!-- Choix d'un préréglage global (inclut un mode personnalisé) -->
             <label class="control-item" for="difficulty">
                 <span>Difficulté</span>
                 <select id="difficulty">
@@ -23,40 +29,48 @@
                 </select>
             </label>
 
+            <!-- Dimensions du plateau (nombre de colonnes) -->
             <label class="control-item" for="w">
                 <span>Largeur</span>
                 <input id="w" type="number" value="6" min="4" max="10">
             </label>
 
+            <!-- Dimensions du plateau (nombre de lignes) -->
             <label class="control-item" for="h">
                 <span>Hauteur</span>
                 <input id="h" type="number" value="6" min="4" max="10">
             </label>
 
+            <!-- Pourcentage de cases bloquées (non jouables) -->
             <label class="control-item" for="obstacle-ratio">
                 <span>Obstacles (%)</span>
                 <input id="obstacle-ratio" type="number" value="15" min="5" max="35" step="1">
             </label>
 
+            <!-- Nombre minimum de cases par pièce générée -->
             <label class="control-item" for="piece-min">
                 <span>Taille pièce min (cases)</span>
                 <input id="piece-min" type="number" value="3" min="2" max="6" step="1">
             </label>
 
+            <!-- Nombre maximum de cases par pièce générée -->
             <label class="control-item" for="piece-max">
                 <span>Taille pièce max (cases)</span>
                 <input id="piece-max" type="number" value="5" min="3" max="7" step="1">
             </label>
         </div>
 
-        <div class="controls-actions"> <!--zone du bouton principal-->
+        <!-- Action principale pour lancer la génération de la partie -->
+        <div class="controls-actions">
             <button id="generate" class="generate-button">Commencer</button>
         </div>
     </div>
 
-    <p class="hint">Choisis la taille puis clique sur Commencer</p> <!--petit texte d'aide pour l'accueil-->
+    <!-- Message d'aide affiché sur l'écran d'accueil -->
+    <p class="hint">Choisis la taille puis clique sur Commencer</p>
 
-    <section class="startup-rules"> <!--règles visibles uniquement à l'accueil-->
+    <!-- Règles affichées en permanence pendant l'écran d'accueil -->
+    <section class="startup-rules">
         <h2>Règles du jeu</h2>
         <ul>
             <li>Clic gauche sur une pièce: tu l'attrapes.</li>
@@ -67,9 +81,14 @@
         </ul>
     </section>
 
-    <details class="game-rules"> <!--même aide en mode jeu, mais repliable-->
+    <!--
+        Règles repliables pendant la partie.
+        Ce bloc remplace visuellement les règles d'accueil lorsque le jeu est lancé.
+    -->
+    <details class="game-rules">
         <summary>Règles du jeu</summary>
-        <div class="rules-content"> <!--contenu visible quand le menu est ouvert-->
+        <!-- Contenu affiché lorsque la section <details> est ouverte -->
+        <div class="rules-content">
             <ul>
                 <li>Clic gauche sur une pièce: tu l'attrapes.</li>
                 <li>Clic gauche une seconde fois: tu la poses.</li>
@@ -79,19 +98,26 @@
             </ul>
         </div>
     </details>
-    <!--zone de jeu: plateau + reserve de pieces-->
+    <!-- Zone de jeu principale: plateau à gauche et réserve de pièces à droite -->
 
     <div class="game">
-        <svg id="board"></svg> <!--grille du tableau-->
-        <div class="pieces-panel"> <!--colonne de droite avec la reserve et les actions-->
-            <svg id="pieces"></svg> <!--reserve de pieces disponibles-->
-            <div class="pieces-actions"> <!--timer + bouton de reinitialisation-->
+        <!-- Plateau SVG sur lequel les pièces doivent être posées -->
+        <svg id="board"></svg>
+
+        <!-- Colonne latérale: réserve de pièces + actions liées à la partie -->
+        <div class="pieces-panel">
+            <!-- Réserve SVG contenant les pièces non encore placées -->
+            <svg id="pieces"></svg>
+
+            <!-- Informations de partie et actions utilitaires -->
+            <div class="pieces-actions">
                 <p id="timer" class="timer">Temps : 00:00</p>
                 <button id="reset-placed" class="reset-button">Réinitialiser les pièces</button>
             </div>
         </div>
     </div>
 
+    <!-- Point d'entrée JavaScript (module principal du jeu) -->
     <script type="module" src="js/script.js"></script>
 </body>
 
