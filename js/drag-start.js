@@ -3,7 +3,8 @@ import { rotateShape } from "./utils.js";
 import { removePieceFromBoard, updateDragPreviewPosition } from "./drag-helpers.js";
 import { createDragPreview } from "./svg-helpers.js";
 
-// Démarre un drag depuis la réserve.
+// Lance un drag depuis la reserve.
+// trayX/trayY correspondent a l'origine visuelle de la piece dans la colonne de droite.
 export function startDragFromTray(piece, event, trayX, trayY) {
     if (state.gameWon) return;
 
@@ -14,6 +15,7 @@ export function startDragFromTray(piece, event, trayX, trayY) {
 
     state.dragOrigin = { placed: false };
 
+    // Calcule le decalage souris -> origine piece pour eviter un "saut" visuel.
     const trayRect = refs.piecesSVG.getBoundingClientRect();
     state.offset.x = event.clientX - (trayRect.left + trayX);
     state.offset.y = event.clientY - (trayRect.top + trayY);
@@ -22,8 +24,8 @@ export function startDragFromTray(piece, event, trayX, trayY) {
     state.handlers.drawPieces();
 }
 
-// Démarre un drag depuis le plateau.
-// On mémorise l'ancienne position pour pouvoir remettre la pièce si la pose échoue.
+// Lance un drag depuis une piece deja posee sur la grille.
+// On memorise sa position d'origine pour pouvoir la restaurer si la nouvelle pose echoue.
 export function startDragFromBoard(piece, event) {
     if (state.gameWon) return;
 
@@ -40,6 +42,7 @@ export function startDragFromBoard(piece, event) {
 
     const boardRect = refs.boardSVG.getBoundingClientRect();
     const scale = parseFloat(refs.boardSVG.dataset.scale || 1);
+    // Le decalage tient compte du zoom applique au plateau.
     state.offset.x = event.clientX - (boardRect.left + piece.boardX * CELL * scale);
     state.offset.y = event.clientY - (boardRect.top + piece.boardY * CELL * scale);
 
@@ -49,7 +52,8 @@ export function startDragFromBoard(piece, event) {
     updateDragPreviewPosition(event.clientX, event.clientY);
 }
 
-// Rotation à 90° de la pièce actuellement tenue.
+// Rotation de 90 degres de la piece actuellement tenue.
+// On regenere l'apercu apres rotation pour refléter immediatement la nouvelle forme.
 export function rotateDraggedPiece(clientX, clientY) {
     if (!state.dragged) return;
 

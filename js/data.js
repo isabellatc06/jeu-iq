@@ -1,6 +1,10 @@
 export const CELL = 50;
 
-// Références DOM partagées dans tout le jeu.
+// Taille d'une case en pixels dans les rendus SVG.
+// Tous les calculs de position reposent sur cette unite.
+
+// References DOM partagees dans tout le jeu.
+// Centraliser ces acces evite de rechercher les memes elements dans chaque module.
 export const refs = {
     boardSVG: document.getElementById("board"),
     piecesSVG: document.getElementById("pieces"),
@@ -23,8 +27,11 @@ export const difficultyPresets = {
     custom: { w: 6, h: 6, obstacleRatio: 0.15, pieceMin: 3, pieceMax: 5, label: "Personnalise" }
 };
 
-// État global partagé entre les modules.
-// On centralise ici la partie en cours, le drag and drop et les handlers croisés.
+// Etat global partage entre les modules.
+// Cette structure stocke:
+// - les donnees de la partie en cours (grille, pieces, obstacles)
+// - le contexte drag and drop courant
+// - les callbacks relies depuis script.js pour eviter les imports circulaires
 export const state = {
     board: [],
     boardW: 0,
@@ -59,7 +66,8 @@ export const state = {
     }
 };
 
-// Couche HTML flottante utilisée pour afficher l'aperçu d'une pièce pendant le drag.
+// Couche HTML flottante utilisee pour afficher l'apercu d'une piece pendant le drag.
+// On la separe des SVG fixes pour garder un rendu fluide au deplacement souris.
 export const dragLayer = document.createElement("div");
 dragLayer.style.position = "fixed";
 dragLayer.style.left = "0";

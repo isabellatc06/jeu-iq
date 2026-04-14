@@ -6,7 +6,8 @@ import { startTimer } from "./timer.js";
 import { hideWinMessage } from "./win.js";
 import { clamp } from "./utils.js";
 
-// Lance une nouvelle partie complète: obstacles, grille, pièces, timer et rendu.
+// Lance une partie complete a partir des parametres actifs.
+// Sequence: reset etat victoire -> generation obstacles -> generation grille -> generation pieces -> rendu.
 export function generateGame(w, h) {
     state.boardW = w;
     state.boardH = h;
@@ -30,7 +31,7 @@ export function generateGame(w, h) {
     state.handlers.drawPieces();
 }
 
-// Bascule l'interface entre écran d'accueil et partie en cours.
+// Bascule les elements d'interface entre mode accueil et mode partie.
 export function setGameStartedUI(started) {
     state.gameStarted = started;
     document.body.classList.toggle("startup", !started);
@@ -40,7 +41,8 @@ export function setGameStartedUI(started) {
     refs.hintText.textContent = "Choisis une difficulte, puis clique sur Commencer";
 }
 
-// Applique les paramètres du preset choisi et verrouille les champs hors mode custom.
+// Applique un preset de difficulte et verrouille/deverrouille les champs custom.
+// En dehors du mode custom, les champs affichent strictement les valeurs du preset.
 export function updateSettingsFromDifficulty() {
     const selected = difficultyPresets[refs.difficultySelect.value] || difficultyPresets.normal;
     state.gameSettings = { ...selected };
@@ -61,11 +63,13 @@ export function updateSettingsFromDifficulty() {
     }
 
     if (!state.gameStarted) {
+        // Message explicite tant que la partie n'a pas commence.
         refs.hintText.textContent = "Choisis une difficulte, puis clique sur Commencer";
     }
 }
 
-// Sécurise les valeurs saisies à la main en mode personnalisé.
+// Valide les saisies custom et les normalise dans des bornes jouables.
+// Cette fonction protege l'etat contre les valeurs vides ou incoherentes.
 export function updateSettingsFromCustomInputs() {
     const w = clamp(+refs.widthInput.value || 6, 4, 10);
     const h = clamp(+refs.heightInput.value || 6, 4, 10);
@@ -73,6 +77,7 @@ export function updateSettingsFromCustomInputs() {
     let pieceMin = clamp(+refs.pieceMinInput.value || 3, 2, 6);
     let pieceMax = clamp(+refs.pieceMaxInput.value || 5, 3, 7);
 
+    // pieceMin ne doit jamais depasser pieceMax.
     if (pieceMin > pieceMax) {
         pieceMax = pieceMin;
     }

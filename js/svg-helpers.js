@@ -1,6 +1,9 @@
 import { CELL, dragLayer, state } from "./data.js";
 
-// Construit le groupe SVG d'une pièce, quelle que soit son échelle d'affichage.
+// Construit un groupe SVG representant une piece.
+// unit permet de reutiliser la meme forme pour:
+// - le plateau (taille CELL)
+// - la reserve (taille reduite)
 export function createPieceGroup(piece, unit) {
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.classList.add("piece");
@@ -19,7 +22,8 @@ export function createPieceGroup(piece, unit) {
     return g;
 }
 
-// Crée l'aperçu flottant qui suit la souris pendant le drag.
+// Cree l'apercu flottant qui suit la souris pendant le drag.
+// Le preview occupe un SVG "tampon" assez grand pour contenir la piece quelle que soit sa rotation.
 export function createDragPreview(piece) {
     dragLayer.innerHTML = "";
 

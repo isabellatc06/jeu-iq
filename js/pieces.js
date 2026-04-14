@@ -1,6 +1,7 @@
 import { normalizeShape, rand, shuffle } from "./utils.js";
 
-// Découpe les cases libres du plateau en grosses pièces connectées.
+// Decoupe toutes les cases libres du plateau en pieces connexes.
+// Chaque piece est construite par croissance locale a partir d'une case depart.
 export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
     const used = obs.map(row => row.map(value => value === -1));
     const generatedPieces = [];
@@ -14,6 +15,7 @@ export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
         [0, -1]
     ];
 
+    // Liste toutes les cases encore disponibles pour creer une nouvelle piece.
     function getFreeCells() {
         const cells = [];
         for (let y = 0; y < h; y++) {
@@ -27,7 +29,7 @@ export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
     }
 
     function buildPiece(startX, startY, targetSize) {
-        // On étend la pièce à partir d'une case de départ en restant connexe.
+        // Expansion pseudo-random depuis une case source, en conservant la connexite.
         const pieceCells = [[startX, startY]];
         const chosen = new Set([`${startX},${startY}`]);
         let frontier = [[startX, startY]];
@@ -40,6 +42,7 @@ export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
                     .filter(([x, y]) => inBounds(x, y) && !used[y][x] && !chosen.has(`${x},${y}`))
             );
 
+            // Si une frontiere est bloquee, on la retire et on tente ailleurs.
             if (neighbors.length === 0) {
                 frontier = frontier.filter(([x, y]) => !(x === baseX && y === baseY));
                 continue;
@@ -51,6 +54,7 @@ export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
             frontier.push([nextX, nextY]);
         }
 
+        // Les cases de la piece deviennent indisponibles pour les pieces suivantes.
         pieceCells.forEach(([x, y]) => {
             used[y][x] = true;
         });
@@ -65,7 +69,7 @@ export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
         const [startX, startY] = freeCells[rand(0, freeCells.length - 1)];
 
         let targetSize = rand(pieceMin, pieceMax);
-        // Évite de laisser à la fin 1 ou 2 cases impossibles à transformer en vraie pièce.
+        // Evite de terminer avec 1-2 cases residuelles difficiles a partitionner proprement.
         if (freeCells.length <= 5) {
             targetSize = freeCells.length;
         } else if (freeCells.length - targetSize === 1 || freeCells.length - targetSize === 2) {
@@ -80,6 +84,7 @@ export function generateSimplePieces(w, h, obs, pieceMin = 3, pieceMax = 5) {
             placed: false,
             boardX: 0,
             boardY: 0,
+            // Position d'affichage initiale dans la reserve.
             trayIndex: generatedPieces.length,
             color: `hsl(${id * 47}, 70%, 60%)`
         });

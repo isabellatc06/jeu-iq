@@ -1,6 +1,7 @@
 import { state } from "./data.js";
 
-// Décrit une case interdite: hors plateau, obstacle ou déjà occupée.
+// Retourne true si une case est non posable.
+// Une case est bloquee si elle est hors grille, obstaclee ou deja occupee.
 export function isBlockedCell(x, y) {
     return (
         x < 0 ||
@@ -12,7 +13,8 @@ export function isBlockedCell(x, y) {
     );
 }
 
-// Vérifie si toute la forme peut être posée à partir d'une origine de grille.
+// Teste si une piece complete peut etre posee a l'origine (gx, gy).
+// Toutes les cases de la forme doivent etre valides.
 export function canPlaceAt(piece, gx, gy) {
     for (const [dx, dy] of piece.shape) {
         const x = gx + dx;
@@ -26,7 +28,7 @@ export function canPlaceAt(piece, gx, gy) {
     return true;
 }
 
-// Écrit la pièce directement dans la grille logique.
+// Ecrit la piece dans la grille logique et met a jour ses metadonnees.
 export function placePieceOnBoard(piece, gx, gy) {
     for (const [dx, dy] of piece.shape) {
         state.board[gy + dy][gx + dx] = piece.id;

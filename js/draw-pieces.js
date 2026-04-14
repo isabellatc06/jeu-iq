@@ -2,7 +2,8 @@ import { CELL, refs, state } from "./data.js";
 import { getShapeBounds } from "./utils.js";
 import { createPieceGroup } from "./svg-helpers.js";
 
-// Dessine la réserve à droite, avec un emplacement par pièce.
+// Redessine la reserve de pieces a droite.
+// Chaque piece est placee dans une "slot card" calculée sur une grille colonnes/lignes.
 export function drawPieces() {
     refs.piecesSVG.innerHTML = "";
     const trayRowHeight = 80;
@@ -10,6 +11,8 @@ export function drawPieces() {
     const trayPadding = 20;
     const trayInnerWidth = trayColWidth - 20;
     const trayInnerHeight = trayRowHeight - 20;
+
+    // La hauteur de reserve suit la hauteur du plateau pour garder une interface equilibree.
     const preferredHeight = Math.max(280, state.boardH * CELL);
     const rowsPerColumn = Math.max(1, Math.floor((preferredHeight - trayPadding * 2) / trayRowHeight));
     const visibleRows = Math.max(1, Math.min(rowsPerColumn, state.pieces.length));
@@ -21,12 +24,13 @@ export function drawPieces() {
     refs.piecesSVG.setAttribute("height", trayHeight);
 
     state.pieces.forEach(piece => {
+        // Position logique de la piece dans la reserve (index -> colonne + ligne).
         const column = Math.floor(piece.trayIndex / rowsPerColumn);
         const row = piece.trayIndex % rowsPerColumn;
         const trayX = trayPadding + column * trayColWidth;
         const trayY = trayPadding + row * trayRowHeight;
         const bounds = getShapeBounds(piece.shape);
-        // Chaque pièce est réduite pour rentrer dans sa case de réserve.
+        // Chaque piece est reduite pour tenir dans sa slot, tout en gardant sa proportion.
         const unit = Math.min(
             CELL / 2,
             trayInnerWidth / bounds.width,
@@ -46,7 +50,7 @@ export function drawPieces() {
         slot.setAttribute("class", "tray-slot");
         refs.piecesSVG.appendChild(slot);
 
-        // On n'affiche pas ici une pièce déjà posée ou actuellement tenue par le joueur.
+        // Piece deja posee ou actuellement attrapee: cachee dans la reserve.
         if (piece.placed || (state.dragged && state.dragged.piece === piece)) {
             return;
         }
@@ -55,6 +59,7 @@ export function drawPieces() {
         g.setAttribute("transform", `translate(${offsetX},${offsetY})`);
 
         g.onpointerdown = e => {
+            // Clic sur piece disponible = debut d'un drag depuis la reserve.
             if (state.dragged) return;
             e.preventDefault();
             e.stopPropagation();
