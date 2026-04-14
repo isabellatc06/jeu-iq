@@ -62,87 +62,83 @@ Ce projet utilise diverses technologies pour son bon fonctionnement :
 
 Structure du projet
 -------------------
-Le projet est organisé de manière à séparer clairement l'interface du jeu,
-les styles, la logique JavaScript et les fichiers de documentation.
+Le projet est organisé en plusieurs fichiers qui séparent l'interface, le style,
+la logique du jeu et la documentation.
 
-Fichiers principaux à la racine
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Fichiers principaux
+~~~~~~~~~~~~~~~~~~~
 
-- `index.html` : page principale de l'application. Elle contient la structure
-  de l'interface, les réglages de partie, les règles du jeu, le plateau,
-  la réserve des pièces et les boutons d'action.
+- `index.html` : page principale de l'application. Elle contient les éléments de
+  l'interface utilisateur, comme les paramètres de génération, les règles du jeu,
+  le plateau, la zone des pièces et les boutons d'action.
 
-- `style.css` : feuille de style principale. Elle gère l'apparence du jeu,
-  la disposition des éléments, les couleurs, les animations et les différents
-  états visuels de l'interface.
+- `style.css` : feuille de style de l'application. Elle gère l'apparence
+  générale, la disposition des éléments, l'affichage du plateau, des pièces,
+  des boutons, des messages et des états visuels du jeu.
 
-- `README.md` : fichier de présentation rapide du projet. Il contient les
-  consignes d'installation, de lancement du jeu et de génération de la
-  documentation HTML.
-
-- `index.rst` : fichier principal de la documentation rédigée avec Sphinx.
-
-- `conf.py` : fichier de configuration de Sphinx.
-
-- `Makefile` et `make.bat` : scripts permettant de générer la documentation
-  dans différents formats, notamment en HTML.
+- `js/` : dossier contenant la logique JavaScript du projet, découpée en
+  plusieurs modules spécialisés.
 
 Organisation du dossier `js`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Le dossier `js/` contient la logique du jeu, répartie en plusieurs modules.
-
-- `js/script.js` : point d'entrée principal de l'application. Il relie les
-  différents modules, initialise l'interface et prépare les interactions.
+- `js/script.js` : point d'entrée principal. Il importe les différents modules,
+  relie les fonctions au système d'état global et initialise l'interface ainsi
+  que les interactions du jeu.
 
 - `js/data.js` : centralise les constantes, les références vers les éléments du
-  DOM, les préréglages de difficulté et l'état global de la partie.
+  DOM, les paramètres de difficulté et l'état global de la partie.
 
-- `js/ui.js` : gère les interactions avec l'interface utilisateur, comme les
-  boutons, les sélecteurs de difficulté et les champs personnalisés.
+- `js/ui.js` : gère les interactions avec les contrôles de l'interface
+  (boutons, choix de difficulté, champs personnalisés).
 
-- `js/game.js` : gère le lancement d'une partie, les paramètres de jeu et le
-  passage entre l'écran d'accueil et la partie en cours.
+- `js/game.js` : gère la création d'une nouvelle partie, la mise à jour des
+  paramètres choisis par l'utilisateur et le passage entre l'écran d'accueil
+  et l'écran de jeu.
 
-- `js/board.js` : crée et affiche le plateau de jeu.
+- `js/board.js` : initialise et dessine le plateau de jeu.
 
-- `js/pieces.js` : génère les pièces du puzzle à partir des cases libres du
-  plateau.
+- `js/pieces.js` : génère les pièces du puzzle en fonction de la taille de la
+  grille et des contraintes choisies.
 
-- `js/draw-pieces.js` : dessine les pièces dans la réserve ou sur le plateau.
+- `js/draw-pieces.js` : affiche graphiquement les pièces dans leur zone de
+  réserve ou sur le plateau.
 
 - `js/obstacle.js` : génère les obstacles sur la grille.
 
 - `js/drag.js`, `js/drag-start.js`, `js/drag-helpers.js` : gèrent le système
   de déplacement des pièces avec la souris.
 
-- `js/snap-place.js` et `js/placement.js` : vérifient la validité d'une pose
-  et mettent à jour la grille lorsque la pièce est placée.
+- `js/snap-place.js` et `js/placement.js` : vérifient et appliquent le placement
+  des pièces sur le plateau.
 
-- `js/win.js` : gère la victoire, le message de fin de partie et la
-  réinitialisation.
+- `js/win.js` : détecte la victoire, affiche le message de fin et gère le
+  retour à l'écran d'accueil ou la réinitialisation.
 
 - `js/timer.js` : gère le chronomètre de la partie.
 
-- `js/svg-helpers.js` : regroupe des fonctions utilitaires pour créer et
-  manipuler les éléments SVG.
+- `js/svg-helpers.js` : fournit des fonctions utilitaires pour la création et
+  la manipulation des éléments SVG.
 
-- `js/utils.js` : contient différentes fonctions utilitaires réutilisées dans
-  plusieurs modules.
+- `js/utils.js` : contient des fonctions utilitaires réutilisées dans plusieurs
+  modules.
 
-Autres dossiers importants
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Documentation et outils
+~~~~~~~~~~~~~~~~~~~~~~~
 
-- `_build/` : contient les fichiers générés par Sphinx, notamment la version
-  HTML de la documentation.
+- `index.rst` : fichier principal de la documentation Sphinx.
 
-- `_static/` et `_templates/` : contiennent des ressources utilisées par Sphinx
-  pour personnaliser le rendu de la documentation.
+- `conf.py` : configuration de Sphinx.
 
-- `venv/` : environnement virtuel Python utilisé localement pour installer les
-  outils nécessaires, comme Sphinx.
+- `README.md` : présentation rapide du projet et consignes de lancement.
 
-- `.vscode/` : contient les réglages liés à Visual Studio Code.
+- `Makefile` et `make.bat` : commandes permettant de générer la documentation.
+
+- `_build/` : fichiers générés par Sphinx.
+
+- `_static/` et `_templates/` : ressources complémentaires utilisées par la
+  documentation.
+
 Fonctionnement interne
 ----------------------
 Le fonctionnement de l'application repose sur plusieurs modules JavaScript qui
@@ -437,6 +433,5 @@ cette description est donc faite de manière honnête mais approximative.
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
 
 

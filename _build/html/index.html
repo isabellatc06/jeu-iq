@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+
+<html lang="fr" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>jeu-iq documentation &#8212; Documentation jeu-iq 1.0</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=7a28dfa3"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/translations.js?v=e6b791cb"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Recherche" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="jeu-iq-documentation">
+<h1>jeu-iq documentation<a class="headerlink" href="#jeu-iq-documentation" title="Lien vers cette rubrique">¶</a></h1>
+<section id="presentation">
+<h2>Présentation<a class="headerlink" href="#presentation" title="Lien vers cette rubrique">¶</a></h2>
+<p>Ce projet est une version digitale des puzzles IQ.
+Ces jeux sont des jeux de logique destinés à un seul joueur.</p>
+<p>Le principe est de placer différentes pièces sur un plateau afin de remplir
+toutes les cases disponibles. Certaines contraintes peuvent exister,
+comme des cases dans lesquelles il est impossible de placer des pièces.</p>
+<p>L’objectif du projet est de créer une application web interactive dans
+laquelle le joueur peut manipuler les pièces avec la souris, les placer
+sur une grille et résoudre un puzzle.</p>
+</section>
+<section id="fonctionnalites">
+<h2>Fonctionnalités<a class="headerlink" href="#fonctionnalites" title="Lien vers cette rubrique">¶</a></h2>
+<p>Actuellement, l’application permet :</p>
+<ul class="simple">
+<li><p>d’afficher un plateau dont la taille est définie par l’utilisateur ;</p></li>
+<li><p>de générer automatiquement des pièces en fonction de cette taille ;</p></li>
+<li><p>de déplacer les pièces avec la souris ;</p></li>
+<li><p>de faire pivoter les pièces ;</p></li>
+<li><p>de placer les pièces sur le plateau ou de les remettre dans leur zone.</p></li>
+</ul>
+<p>L’utilisateur peut également :</p>
+<ul class="simple">
+<li><p>modifier la largeur et la hauteur du plateau ;</p></li>
+<li><p>choisir un préréglage de difficulté ;</p></li>
+<li><p>personnaliser le pourcentage d’obstacles ;</p></li>
+<li><p>personnaliser la taille minimale et maximale des pièces ;</p></li>
+<li><p>générer un nouveau puzzle ;</p></li>
+<li><p>réinitialiser le plateau en remettant toutes les pièces dans leur zone initiale.</p></li>
+</ul>
+<p>Enfin, un message de victoire s’affiche lorsque le puzzle est résolu, avec un retour à l’accueil.</p>
+</section>
+<section id="technologies-utilisees">
+<h2>Technologies utilisées<a class="headerlink" href="#technologies-utilisees" title="Lien vers cette rubrique">¶</a></h2>
+<p>Ce projet utilise diverses technologies pour son bon fonctionnement :</p>
+<ul class="simple">
+<li><p>HTML : il est utilisé pour la structure de l’interface du jeu, comme
+les boutons, les textes et les zones d’affichage du plateau et des pièces.</p></li>
+<li><p>CSS : il sert à gérer l’apparence du jeu, comme les couleurs, la disposition
+des éléments, le style des boutons et l’aspect visuel du plateau et des pièces.</p></li>
+<li><p>JavaScript : il sert à programmer le fonctionnement du jeu, c’est-à-dire la
+génération du puzzle, le déplacement des pièces, la vérification des placements
+et la détection de la victoire.</p></li>
+<li><p>SVG : il est utilisé pour dessiner le plateau et les pièces du puzzle, car cela
+permet d’afficher des formes précises, redimensionnables et faciles à manipuler.</p></li>
+<li><p>Sphinx / reStructuredText : ils sont utilisés pour rédiger et générer la
+documentation du projet.</p></li>
+</ul>
+</section>
+<section id="structure-du-projet">
+<h2>Structure du projet<a class="headerlink" href="#structure-du-projet" title="Lien vers cette rubrique">¶</a></h2>
+<p>Le projet est organisé en plusieurs fichiers qui séparent l’interface, le style,
+la logique du jeu et la documentation.</p>
+<section id="fichiers-principaux">
+<h3>Fichiers principaux<a class="headerlink" href="#fichiers-principaux" title="Lien vers cette rubrique">¶</a></h3>
+<ul class="simple">
+<li><p><cite>index.html</cite> : page principale de l’application. Elle contient les éléments de
+l’interface utilisateur, comme les paramètres de génération, les règles du jeu,
+le plateau, la zone des pièces et les boutons d’action.</p></li>
+<li><p><cite>style.css</cite> : feuille de style de l’application. Elle gère l’apparence
+générale, la disposition des éléments, l’affichage du plateau, des pièces,
+des boutons, des messages et des états visuels du jeu.</p></li>
+<li><p><cite>js/</cite> : dossier contenant la logique JavaScript du projet, découpée en
+plusieurs modules spécialisés.</p></li>
+</ul>
+</section>
+<section id="organisation-du-dossier-js">
+<h3>Organisation du dossier <cite>js</cite><a class="headerlink" href="#organisation-du-dossier-js" title="Lien vers cette rubrique">¶</a></h3>
+<ul class="simple">
+<li><p><cite>js/script.js</cite> : point d’entrée principal. Il importe les différents modules,
+relie les fonctions au système d’état global et initialise l’interface ainsi
+que les interactions du jeu.</p></li>
+<li><p><cite>js/data.js</cite> : centralise les constantes, les références vers les éléments du
+DOM, les paramètres de difficulté et l’état global de la partie.</p></li>
+<li><p><cite>js/ui.js</cite> : gère les interactions avec les contrôles de l’interface
+(boutons, choix de difficulté, champs personnalisés).</p></li>
+<li><p><cite>js/game.js</cite> : gère la création d’une nouvelle partie, la mise à jour des
+paramètres choisis par l’utilisateur et le passage entre l’écran d’accueil
+et l’écran de jeu.</p></li>
+<li><p><cite>js/board.js</cite> : initialise et dessine le plateau de jeu.</p></li>
+<li><p><cite>js/pieces.js</cite> : génère les pièces du puzzle en fonction de la taille de la
+grille et des contraintes choisies.</p></li>
+<li><p><cite>js/draw-pieces.js</cite> : affiche graphiquement les pièces dans leur zone de
+réserve ou sur le plateau.</p></li>
+<li><p><cite>js/obstacle.js</cite> : génère les obstacles sur la grille.</p></li>
+<li><p><cite>js/drag.js</cite>, <cite>js/drag-start.js</cite>, <cite>js/drag-helpers.js</cite> : gèrent le système
+de déplacement des pièces avec la souris.</p></li>
+<li><p><cite>js/snap-place.js</cite> et <cite>js/placement.js</cite> : vérifient et appliquent le placement
+des pièces sur le plateau.</p></li>
+<li><p><cite>js/win.js</cite> : détecte la victoire, affiche le message de fin et gère le
+retour à l’écran d’accueil ou la réinitialisation.</p></li>
+<li><p><cite>js/timer.js</cite> : gère le chronomètre de la partie.</p></li>
+<li><p><cite>js/svg-helpers.js</cite> : fournit des fonctions utilitaires pour la création et
+la manipulation des éléments SVG.</p></li>
+<li><p><cite>js/utils.js</cite> : contient des fonctions utilitaires réutilisées dans plusieurs
+modules.</p></li>
+</ul>
+</section>
+<section id="documentation-et-outils">
+<h3>Documentation et outils<a class="headerlink" href="#documentation-et-outils" title="Lien vers cette rubrique">¶</a></h3>
+<ul class="simple">
+<li><p><cite>index.rst</cite> : fichier principal de la documentation Sphinx.</p></li>
+<li><p><cite>conf.py</cite> : configuration de Sphinx.</p></li>
+<li><p><cite>README.md</cite> : présentation rapide du projet et consignes de lancement.</p></li>
+<li><p><cite>Makefile</cite> et <cite>make.bat</cite> : commandes permettant de générer la documentation.</p></li>
+<li><p><cite>_build/</cite> : fichiers générés par Sphinx.</p></li>
+<li><p><cite>_static/</cite> et <cite>_templates/</cite> : ressources complémentaires utilisées par la
+documentation.</p></li>
+</ul>
+</section>
+</section>
+<section id="fonctionnement-interne">
+<h2>Fonctionnement interne<a class="headerlink" href="#fonctionnement-interne" title="Lien vers cette rubrique">¶</a></h2>
+<p>Le fonctionnement de l’application repose sur plusieurs modules JavaScript qui
+coopèrent pour générer une partie, afficher le puzzle et gérer les interactions
+du joueur.</p>
+<section id="initialisation">
+<h3>1. Initialisation<a class="headerlink" href="#initialisation" title="Lien vers cette rubrique">¶</a></h3>
+<p>Lorsque la page s’ouvre, le fichier <cite>js/script.js</cite> lance l’application.
+Il importe les modules principaux, associe plusieurs fonctions au système
+central d’état, puis appelle notamment <cite>initDragHandlers()</cite>, <cite>resetTimer()</cite>
+et <cite>initUI()</cite> afin de rendre l’interface immédiatement utilisable.</p>
+</section>
+<section id="gestion-de-l-etat-du-jeu">
+<h3>2. Gestion de l’état du jeu<a class="headerlink" href="#gestion-de-l-etat-du-jeu" title="Lien vers cette rubrique">¶</a></h3>
+<p>Le fichier <cite>js/data.js</cite> centralise les informations partagées par tout le
+programme. Il contient notamment :</p>
+<ul class="simple">
+<li><p>la taille du plateau ;</p></li>
+<li><p>la grille logique de la partie ;</p></li>
+<li><p>la liste des obstacles ;</p></li>
+<li><p>les pièces générées ;</p></li>
+<li><p>la pièce en cours de déplacement ;</p></li>
+<li><p>les paramètres de difficulté ;</p></li>
+<li><p>l’état de victoire ;</p></li>
+<li><p>les références vers les éléments HTML et SVG.</p></li>
+</ul>
+<p>Cette centralisation permet aux autres modules de lire et de modifier les mêmes
+données pendant toute la partie.</p>
+</section>
+<section id="parametrage-et-lancement-d-une-partie">
+<h3>3. Paramétrage et lancement d’une partie<a class="headerlink" href="#parametrage-et-lancement-d-une-partie" title="Lien vers cette rubrique">¶</a></h3>
+<p>Les interactions avec les boutons et les champs de saisie sont préparées dans
+<cite>js/ui.js</cite> grâce à <cite>initUI()</cite>.</p>
+<p>Lorsque le joueur change la difficulté, <cite>updateSettingsFromDifficulty()</cite> dans
+<cite>js/game.js</cite> applique les valeurs correspondant au niveau choisi. Si le joueur
+utilise le mode personnalisé, <cite>updateSettingsFromCustomInputs()</cite> vérifie les
+valeurs saisies et les adapte aux limites prévues par le jeu.</p>
+<p>Quand le joueur clique sur <strong>Commencer</strong>, <cite>initUI()</cite> déclenche ensuite
+<cite>generateGame()</cite> dans <cite>js/game.js</cite>.</p>
+<p>Cette fonction :</p>
+<ul class="simple">
+<li><p>enregistre la largeur et la hauteur du plateau ;</p></li>
+<li><p>réinitialise certains états liés à la victoire ;</p></li>
+<li><p>génère les obstacles avec <cite>generateObstacles()</cite> dans <cite>js/obstacle.js</cite> ;</p></li>
+<li><p>crée la grille logique avec <cite>initBoard()</cite> ;</p></li>
+<li><p>génère les pièces avec <cite>generateSimplePieces()</cite> dans <cite>js/pieces.js</cite> ;</p></li>
+<li><p>démarre le chronomètre avec <cite>startTimer()</cite> ;</p></li>
+<li><p>redessine le plateau et les pièces avec <cite>drawBoard()</cite> et <cite>drawPieces()</cite>.</p></li>
+</ul>
+</section>
+<section id="generation-du-plateau-et-des-pieces">
+<h3>4. Génération du plateau et des pièces<a class="headerlink" href="#generation-du-plateau-et-des-pieces" title="Lien vers cette rubrique">¶</a></h3>
+<p>Le plateau est représenté sous forme de grille logique, puis affiché en SVG.
+Le module <cite>js/board.js</cite> prépare cette grille et dessine visuellement les cases
+ainsi que les obstacles.</p>
+<p>Les obstacles sont produits par <cite>generateObstacles()</cite> dans <cite>js/obstacle.js</cite>,
+qui marque certaines cases comme interdites.</p>
+<p>Les pièces sont créées dans <cite>js/pieces.js</cite> par <cite>generateSimplePieces()</cite>.
+Cette fonction parcourt les cases libres du plateau et les regroupe en formes
+connexes de tailles variables afin de produire l’ensemble des pièces du puzzle.</p>
+</section>
+<section id="affichage-graphique">
+<h3>5. Affichage graphique<a class="headerlink" href="#affichage-graphique" title="Lien vers cette rubrique">¶</a></h3>
+<p>L’affichage repose sur le format SVG, qui facilite le placement précis des
+formes. Le module <cite>js/draw-pieces.js</cite> affiche les pièces soit dans la zone de
+réserve, soit sur le plateau selon leur état.</p>
+<p>Des fonctions utilitaires regroupées dans <cite>js/svg-helpers.js</cite> servent à créer
+et à manipuler les éléments graphiques nécessaires à l’affichage.</p>
+</section>
+<section id="deplacement-et-rotation-des-pieces">
+<h3>6. Déplacement et rotation des pièces<a class="headerlink" href="#deplacement-et-rotation-des-pieces" title="Lien vers cette rubrique">¶</a></h3>
+<p>Le déplacement des pièces est géré par plusieurs modules complémentaires :</p>
+<ul class="simple">
+<li><p><cite>js/drag.js</cite> met en place les événements liés au déplacement ;</p></li>
+<li><p><cite>js/drag-start.js</cite> gère le début de la prise d’une pièce ;</p></li>
+<li><p><cite>js/drag-helpers.js</cite> fournit des fonctions utilitaires liées à ce comportement.</p></li>
+</ul>
+<p>Selon l’endroit où se trouve la pièce, le programme utilise <cite>startDragFromTray()</cite>
+si elle vient de la réserve, ou <cite>startDragFromBoard()</cite> si elle était déjà posée.</p>
+<p>Pendant le déplacement, le joueur peut faire pivoter la pièce. Cette action est
+prise en charge par <cite>rotateDraggedPiece()</cite>, qui modifie l’orientation de la forme
+avant la tentative de pose.</p>
+</section>
+<section id="verification-et-placement">
+<h3>7. Vérification et placement<a class="headerlink" href="#verification-et-placement" title="Lien vers cette rubrique">¶</a></h3>
+<p>Quand le joueur relâche une pièce, <cite>snapAndPlace()</cite> dans <cite>js/snap-place.js</cite>
+convertit la position de la souris en coordonnées de grille.</p>
+<p>La validité du placement est ensuite testée par <cite>canPlaceAt()</cite> dans
+<cite>js/placement.js</cite>. Cette fonction vérifie que :</p>
+<ul class="simple">
+<li><p>la pièce reste dans les limites du plateau ;</p></li>
+<li><p>la pièce ne recouvre pas un obstacle ;</p></li>
+<li><p>la pièce ne recouvre pas une case déjà occupée.</p></li>
+</ul>
+<p>Si la pose est possible, <cite>placePieceOnBoard()</cite> inscrit la pièce dans la grille
+logique et met à jour sa position. Si elle ne l’est pas, la pièce est renvoyée
+vers sa position précédente ou vers la zone de réserve.</p>
+</section>
+<section id="detection-de-la-victoire-et-fin-de-partie">
+<h3>8. Détection de la victoire et fin de partie<a class="headerlink" href="#detection-de-la-victoire-et-fin-de-partie" title="Lien vers cette rubrique">¶</a></h3>
+<p>Après chaque placement, <cite>checkWin()</cite> dans <cite>js/win.js</cite> parcourt la grille logique
+pour vérifier si toutes les cases libres ont été remplies.</p>
+<p>Lorsque la partie est gagnée :</p>
+<ul class="simple">
+<li><p><cite>stopTimer()</cite> arrête le chronomètre ;</p></li>
+<li><p><cite>showWinMessage()</cite> affiche le message de victoire ;</p></li>
+<li><p>le temps final est présenté au joueur ;</p></li>
+<li><p><cite>returnToStartup()</cite> permet ensuite de revenir à l’écran d’accueil.</p></li>
+</ul>
+</section>
+<section id="reinitialisation">
+<h3>9. Réinitialisation<a class="headerlink" href="#reinitialisation" title="Lien vers cette rubrique">¶</a></h3>
+<p>Le joueur peut également relancer l’organisation des pièces sans créer un nouveau
+puzzle. Dans ce cas, <cite>resetPlacedPieces()</cite> dans <cite>js/win.js</cite> :</p>
+<ul class="simple">
+<li><p>remet l’état de victoire à zéro ;</p></li>
+<li><p>reconstruit la grille à partir des obstacles existants ;</p></li>
+<li><p>retire les pièces placées ;</p></li>
+<li><p>replace toutes les pièces dans leur zone initiale ;</p></li>
+<li><p>redessine le plateau et les pièces.</p></li>
+</ul>
+</section>
+</section>
+<section id="limites-et-ameliorations-possibles">
+<h2>Limites et améliorations possibles<a class="headerlink" href="#limites-et-ameliorations-possibles" title="Lien vers cette rubrique">¶</a></h2>
+<p>Même si le projet est jouable et fonctionnel, certaines limites restent
+présentes dans sa version actuelle.</p>
+<section id="limites-du-projet">
+<h3>Limites du projet<a class="headerlink" href="#limites-du-projet" title="Lien vers cette rubrique">¶</a></h3>
+<ul class="simple">
+<li><p>La difficulté repose principalement sur la taille du plateau, le nombre
+d’obstacles et la taille des pièces. Elle n’est donc pas encore fondée sur
+des puzzles conçus individuellement avec une solution précise.</p></li>
+<li><p>La vérification de victoire consiste surtout à contrôler que toutes les cases
+libres du plateau sont remplies. Le programme ne compare pas encore la disposition
+finale des pièces à une solution prédéfinie.</p></li>
+<li><p>Le projet reste centré sur une utilisation à la souris. Il ne comporte pas
+encore de commandes clavier ou d’améliorations spécifiques liées à l’accessibilité.</p></li>
+</ul>
+</section>
+<section id="ameliorations-possibles">
+<h3>Améliorations possibles<a class="headerlink" href="#ameliorations-possibles" title="Lien vers cette rubrique">¶</a></h3>
+<p>Il est possible d’ajouter des modifications afin de faire évoluer le projet :</p>
+<ul class="simple">
+<li><p>créer une liste de niveaux ou de défis prédéfinis avec une difficulté progressive ;</p></li>
+<li><p>associer chaque défi à une solution connue afin de renforcer la vérification
+de la résolution ;</p></li>
+<li><p>améliorer les effets visuels lors du déplacement et du placement des pièces,
+par exemple avec des surbrillances ou des animations ;</p></li>
+<li><p>enrichir l’interface avec davantage d’informations pour le joueur, comme un
+meilleur guidage, des messages d’erreur plus explicites ou des aides contextuelles ;</p></li>
+<li><p>proposer d’autres options de jeu, comme un mode chronométré, un système de
+score ou des statistiques de partie.</p></li>
+</ul>
+</section>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Lien vers cette rubrique">¶</a></h2>
+<p>Pour installer le projet :</p>
+<ul class="simple">
+<li><p>assurez-vous d’avoir installé Git et Visual Studio Code avant de commencer ;</p></li>
+<li><p>copiez le lien HTTPS du dépôt GitHub ;</p></li>
+<li><p>ouvrez Visual Studio Code et un terminal dans VS Code ;</p></li>
+<li><p>clonez le projet avec la commande <cite>git clone https://github.com/isabellatc06/jeu-iq.git</cite> ;</p></li>
+<li><p>accédez au dossier du projet avec <cite>cd jeu-iq</cite> ;</p></li>
+<li><p>ouvrez le projet avec <cite>code .</cite>.</p></li>
+</ul>
+<p>Pour lancer le jeu :</p>
+<ul class="simple">
+<li><p>cherchez dans les fichiers le fichier <cite>index.html</cite> ;</p></li>
+<li><p>faites un clic droit sur le fichier <cite>index.html</cite> ;</p></li>
+<li><p>choisissez l’option <strong>Open with Live Server</strong> ;</p></li>
+<li><p>si l’extension n’est pas installée, ajoutez <strong>Live Server</strong> de Ritwick Dey dans l’onglet des extensions.</p></li>
+</ul>
+</section>
+<section id="utilisation">
+<h2>Utilisation<a class="headerlink" href="#utilisation" title="Lien vers cette rubrique">¶</a></h2>
+<p>L’utilisation du jeu suit plusieurs étapes, depuis la préparation de la partie
+jusqu’à sa résolution.</p>
+<section id="choix-des-parametres">
+<h3>1. Choix des paramètres<a class="headerlink" href="#choix-des-parametres" title="Lien vers cette rubrique">¶</a></h3>
+<p>Avant de lancer une partie, le joueur choisit une difficulté prédéfinie
+ou active le mode personnalisé. Dans ce mode, il peut modifier :</p>
+<ul class="simple">
+<li><p>la largeur du plateau ;</p></li>
+<li><p>la hauteur du plateau ;</p></li>
+<li><p>le pourcentage d’obstacles ;</p></li>
+<li><p>la taille minimale des pièces ;</p></li>
+<li><p>la taille maximale des pièces.</p></li>
+</ul>
+<p>Ces réglages permettent d’adapter la partie au niveau souhaité.</p>
+</section>
+<section id="lancement-de-la-partie">
+<h3>2. Lancement de la partie<a class="headerlink" href="#lancement-de-la-partie" title="Lien vers cette rubrique">¶</a></h3>
+<p>Quand le joueur clique sur <strong>Commencer</strong>, le jeu génère un nouveau puzzle.
+Le plateau est créé selon les paramètres choisis, les obstacles sont placés
+et les pièces correspondantes apparaissent dans leur zone de réserve.</p>
+<p>Le chronomètre démarre également au lancement de la partie.</p>
+</section>
+<section id="deplacement-des-pieces">
+<h3>3. Déplacement des pièces<a class="headerlink" href="#deplacement-des-pieces" title="Lien vers cette rubrique">¶</a></h3>
+<p>Une fois la partie commencée, le joueur peut cliquer sur une pièce pour la
+prendre puis la déplacer avec la souris jusqu’à l’endroit souhaité.</p>
+<p>Les pièces peuvent venir soit de la zone de réserve, soit du plateau si elles
+ont déjà été placées auparavant.</p>
+</section>
+<section id="rotation-des-pieces">
+<h3>4. Rotation des pièces<a class="headerlink" href="#rotation-des-pieces" title="Lien vers cette rubrique">¶</a></h3>
+<p>Pendant qu’une pièce est en cours de déplacement, le joueur peut faire un
+clic droit pour la faire pivoter. Cela permet d’essayer différentes
+orientations afin de l’adapter à l’espace disponible sur le plateau.</p>
+</section>
+<section id="placement-sur-le-plateau">
+<h3>5. Placement sur le plateau<a class="headerlink" href="#placement-sur-le-plateau" title="Lien vers cette rubrique">¶</a></h3>
+<p>Lorsque le joueur relâche une pièce, le jeu vérifie si elle peut être posée
+à cet endroit.</p>
+<p>Le placement est accepté seulement si :</p>
+<ul class="simple">
+<li><p>la pièce reste dans les limites du plateau ;</p></li>
+<li><p>la pièce ne recouvre pas un obstacle ;</p></li>
+<li><p>la pièce ne recouvre pas une case déjà occupée.</p></li>
+</ul>
+<p>Si le placement est valide, la pièce reste sur le plateau. Sinon, elle revient
+à sa position précédente ou dans sa zone de réserve.</p>
+</section>
+<section id="id1">
+<h3>6. Réinitialisation<a class="headerlink" href="#id1" title="Lien vers cette rubrique">¶</a></h3>
+<p>Le bouton <strong>Réinitialiser les pièces</strong> permet de recommencer le placement
+sans générer un nouveau puzzle.</p>
+<p>Dans ce cas, le plateau conserve sa forme et ses obstacles, mais toutes les
+pièces sont retirées puis remises dans leur zone initiale.</p>
+</section>
+<section id="fin-de-partie">
+<h3>7. Fin de partie<a class="headerlink" href="#fin-de-partie" title="Lien vers cette rubrique">¶</a></h3>
+<p>Après chaque placement, le jeu vérifie si toutes les cases libres du plateau
+sont occupées.</p>
+<p>Lorsque le puzzle est résolu :</p>
+<ul class="simple">
+<li><p>le chronomètre s’arrête ;</p></li>
+<li><p>un message de victoire s’affiche ;</p></li>
+<li><p>le temps final est indiqué au joueur ;</p></li>
+<li><p>un retour à l’accueil est proposé.</p></li>
+</ul>
+</section>
+</section>
+<section id="utilisation-de-l-intelligence-artificielle">
+<h2>Utilisation de l’intelligence artificielle<a class="headerlink" href="#utilisation-de-l-intelligence-artificielle" title="Lien vers cette rubrique">¶</a></h2>
+<p>Nous avons utilisé une intelligence artificielle, notamment Codex (dans une
+version récente basée sur les modèles GPT-5 Codex), comme aide au développement
+de certaines parties du projet.</p>
+<p>Elle nous a surtout aidés à :</p>
+<ul class="simple">
+<li><p>corriger des erreurs dans le code JavaScript ;</p></li>
+<li><p>proposer ou compléter certaines fonctions ;</p></li>
+<li><p>améliorer la structure de certaines parties du projet ;</p></li>
+<li><p>reformuler ou améliorer certains éléments de documentation.</p></li>
+</ul>
+<p>Les idées générales du projet, les choix de conception, les tests, les
+ajustements et la compréhension du fonctionnement ont été réalisés par
+nous-mêmes.</p>
+<p>Nous ne disposons plus de l’historique exact de tous les prompts utilisés ;
+cette description est donc faite de manière honnête mais approximative.</p>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">jeu-iq</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2026, Stephan Luthert, Isabella Trujillo.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 9.0.4</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
