@@ -1,4 +1,10 @@
-/*toute la page*/
+/*
+    Base globale de la page:
+    - fond en degrade
+    - texte clair
+    - centrage horizontal
+    - organisation verticale avec l'en-tete en haut
+*/
 body {
     margin: 0;
     background: linear-gradient(135deg, #1e1e2f, #2c2c44);
@@ -12,21 +18,32 @@ body {
     overflow: hidden;
 }
 
+/*
+    Etat "startup" (ecran d'accueil):
+    - tout est centre verticalement
+    - pas de defilement
+*/
 body.startup {
     justify-content: center;
     overflow: hidden;
 }
 
+/* Titre principal plus grand sur l'ecran d'accueil */
 body.startup h1 {
     font-size: clamp(42px, 7vw, 72px);
     margin-bottom: 24px;
 }
 
+/* Marges du titre en mode standard (jeu en cours) */
 h1 {
     margin: 10px;
 }
 
-/*organise les boutons (generer etc donc partie en dessous du titre)*/
+/*
+    Panneau principal des controles (difficulte, options, actions):
+    - structure en colonne
+    - largeur responsive
+*/
 .controls {
     display: flex;
     flex-direction: column;
@@ -36,13 +53,20 @@ h1 {
     width: min(980px, 95vw);
 }
 
+/*
+    Grille responsive des champs:
+    chaque cellule garde une largeur minimale lisible
+*/
 .controls-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 10px;
 }
 
-/* chaque parametre est affiche comme une petite carte verticale */
+/*
+    Bloc d'un parametre (label + champ):
+    l'empilement vertical facilite la lecture
+*/
 .control-item {
     display: flex;
     flex-direction: column;
@@ -51,10 +75,12 @@ h1 {
     color: rgba(255, 255, 255, 0.92);
 }
 
+/* Label du parametre */
 .control-item span {
     font-weight: 600;
 }
 
+/* Ajustements du panneau de controles sur l'ecran d'accueil */
 body.startup .controls {
     justify-content: center;
     gap: 10px;
@@ -62,6 +88,7 @@ body.startup .controls {
     margin-bottom: 14px;
 }
 
+/* Taille de champs augmentee a l'accueil pour guider l'utilisateur */
 body.startup input,
 body.startup button,
 body.startup select {
@@ -70,25 +97,29 @@ body.startup select {
     border-radius: 16px;
 }
 
+/* Grille legerement plus compacte a l'accueil */
 body.startup .controls-grid {
     grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
+/* Ligne qui contient le bouton principal (et actions associees) */
 .controls-actions {
     display: flex;
     justify-content: center;
     width: 100%;
 }
 
-/* en jeu, la ligne d'action reste juste sous les parametres */
+/* En jeu, garde la ligne d'action visuellement collee aux parametres */
 body:not(.startup) .controls-actions {
     margin-top: 4px;
 }
 
+/* Indice d'accueil un peu plus visible */
 body.startup .hint {
     font-size: 18px;
 }
 
+/* Bouton principal de generation d'une nouvelle partie */
 .generate-button {
     font-size: 15px;
     padding: 9px 12px;
@@ -97,10 +128,12 @@ body.startup .hint {
     min-width: 220px;
 }
 
+/* Timer masque tant que la partie n'est pas lancee */
 .timer {
     display: none;
 }
 
+/* Timer visible en cours de partie, style badge */
 body:not(.startup) .timer {
     display: inline-flex;
     align-items: center;
@@ -115,11 +148,17 @@ body:not(.startup) .timer {
     letter-spacing: 0.02em;
 }
 
+/* Le bouton de reset des pieces placees n'apparait pas a l'accueil */
 body.startup #reset-placed {
     display: none;
 }
 
-/* colonne de droite: pieces, timer et bouton de reinitialisation */
+/*
+    Colonne de droite du jeu:
+    - reserve de pieces
+    - timer
+    - actions de reinitialisation
+*/
 .pieces-panel {
     display: flex;
     flex-direction: column;
@@ -127,7 +166,7 @@ body.startup #reset-placed {
     align-items: stretch;
 }
 
-/* place les actions de la reserve sur une seule ligne */
+/* Aligne les actions de la reserve sur une seule ligne */
 .pieces-actions {
     display: flex;
     align-items: center;
@@ -135,6 +174,7 @@ body.startup #reset-placed {
     gap: 12px;
 }
 
+/* Palette de couleur du bouton principal */
 #generate {
     background: #5b78ff;
 }
@@ -143,6 +183,7 @@ body.startup #reset-placed {
     background: #4865ef;
 }
 
+/* Bouton de remise a zero des pieces deja placees */
 #reset-placed {
     font-size: 16px;
     padding: 10px 14px;
@@ -154,11 +195,16 @@ body.startup #reset-placed {
     background: #4c5669;
 }
 
+/* Bloc de regles de l'accueil masque par defaut */
 .startup-rules {
     display: none;
 }
 
-/* meme panneau d'aide que sur l'accueil, mais affiche en mode deroulant pendant la partie */
+/*
+    Carte de regles partagee:
+    - visible directement a l'accueil
+    - meme style reutilise pour les regles en partie
+*/
 body.startup .startup-rules,
 body:not(.startup) .game-rules {
     display: block;
@@ -170,11 +216,13 @@ body:not(.startup) .game-rules {
     margin-top: 6px;
 }
 
+/* Titre des regles sur l'ecran d'accueil */
 body.startup .startup-rules h2 {
     margin: 0 0 10px;
     font-size: 24px;
 }
 
+/* Liste des regles (accueil et panneau deroulant en jeu) */
 body.startup .startup-rules ul,
 .game-rules .rules-content ul {
     margin: 0;
@@ -183,10 +231,12 @@ body.startup .startup-rules ul,
     font-size: 18px;
 }
 
+/* Panneau deroulant de regles masque par defaut */
 .game-rules {
     display: none;
 }
 
+/* Apparence du panneau de regles quand la partie est en cours */
 body:not(.startup) .game-rules {
     width: min(760px, 92vw);
     margin: 10px 0 28px;
@@ -197,6 +247,7 @@ body:not(.startup) .game-rules {
     overflow: hidden;
 }
 
+/* Ligne de resume cliquable (en-tete du details) */
 body:not(.startup) .game-rules summary {
     list-style: none;
     cursor: pointer;
@@ -205,29 +256,37 @@ body:not(.startup) .game-rules summary {
     font-size: 16px;
 }
 
+/* Cache le marqueur natif pour utiliser une fleche personnalisee */
 body:not(.startup) .game-rules summary::-webkit-details-marker {
     display: none;
 }
 
+/* Fleche du panneau ferme */
 body:not(.startup) .game-rules summary::after {
     content: "▾";
     float: right;
     opacity: 0.8;
 }
 
+/* Fleche du panneau ouvert */
 body:not(.startup) .game-rules[open] summary::after {
     content: "▴";
 }
 
+/* Contenu interne du panneau de regles */
 body:not(.startup) .game-rules .rules-content {
     padding: 0 22px 18px;
 }
 
+/*
+    Le plateau est dessine en SVG:
+    l'origine de transformation en haut a gauche simplifie le zoom/scale
+*/
 #board {
     transform-origin: top left;
 }
 
-/**/
+/* Message d'aide court sous les controles */
 .hint {
     opacity: 0.7;
     font-size: 14px;
@@ -235,7 +294,10 @@ body:not(.startup) .game-rules .rules-content {
     text-align: center;
 }
 
-/*style des boutons*/
+/*
+    Style de base des champs et boutons:
+    bords arrondis et espacement coherent
+*/
 input,
 button,
 select {
@@ -244,6 +306,7 @@ select {
     border: none;
 }
 
+/* Champs desactives volontairement lisibles (pas grises/fadees) */
 input:disabled,
 select:disabled {
     opacity: 1;
@@ -252,13 +315,17 @@ select:disabled {
     cursor: not-allowed;
 }
 
+/* Style global des boutons cliquables */
 button {
     background: #5b78ff;
     color: white;
     cursor: pointer;
 }
 
-/*tableau et pieces*/
+/*
+    Conteneur principal du jeu (plateau + reserve):
+    dimensionne pour remplir l'ecran sans debordement
+*/
 .game {
     display: flex;
     gap: 20px;
@@ -270,10 +337,12 @@ button {
     justify-content: center;
 }
 
+/* Le conteneur du jeu n'est pas affiche sur l'ecran d'accueil */
 body.startup .game {
     display: none;
 }
 
+/* En jeu, le conteneur devient flexible et centre */
 body:not(.startup) .game {
     flex: 1;
     min-height: 0;
@@ -284,17 +353,19 @@ body:not(.startup) .game {
     margin: 0 auto;
 }
 
+/* Reserve des pieces: contraste, relief et profondeur */
 #pieces {
     background: linear-gradient(180deg, #2a2d42, #23263a);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
+/* Emplacement eventuel de piece (masque tant qu'inutile) */
 .tray-slot {
     display: none;
 }
 
-/*fond gris et bords*/
+/* Style global des zones SVG (plateau et reserve) */
 svg {
     background: #ddd;
     border-radius: 10px;
@@ -302,28 +373,39 @@ svg {
     width: auto;
 }
 
+/* Apercu de drag transparent pour ne pas polluer la vue */
 .drag-preview {
     background: transparent;
     border-radius: 0;
 }
 
-/*style de chaque pieces lors du curseur*/
+/*
+    Style des blocs de pieces:
+    contour visible + curseur de prehension
+*/
 .piece rect {
     stroke: #222;
     stroke-width: 2;
     cursor: grab;
 }
 
+/* Reserve scrollable horizontalement si manque de place */
 #pieces {
     overflow-x: auto;
     overflow-y: hidden;
     max-height: 90vh;
 }
 
+/* Hauteur adaptee en mode jeu pour laisser la place au reste de l'UI */
 body:not(.startup) #pieces {
     max-height: calc(100vh - 260px);
 }
 
+/*
+    Fenetre de victoire au centre:
+    - cachee par defaut
+    - rendue visible avec la classe .show
+*/
 .win-message {
     position: fixed;
     left: 50%;
@@ -345,17 +427,20 @@ body:not(.startup) #pieces {
     z-index: 1100;
 }
 
+/* Valeur du temps final mise en avant */
 .win-time {
     font-weight: 700;
     color: #d9e2ff;
 }
 
+/* Etat visible du message de victoire */
 .win-message.show {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
     pointer-events: auto;
 }
 
+/* Bouton de relance depuis la fenetre de victoire */
 .win-message button {
     background: #4caf50;
     color: #fff;
