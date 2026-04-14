@@ -42,6 +42,7 @@ h1 {
     gap: 10px;
 }
 
+/* chaque parametre est affiche comme une petite carte verticale */
 .control-item {
     display: flex;
     flex-direction: column;
@@ -73,27 +74,65 @@ body.startup .controls-grid {
     grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
-body.startup .generate-button,
-.generate-button {
-    grid-column: 1 / -1;
-    justify-self: center;
-    min-width: 220px;
-    font-weight: 700;
+.controls-actions {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+/* en jeu, la ligne d'action reste juste sous les parametres */
+body:not(.startup) .controls-actions {
+    margin-top: 4px;
 }
 
 body.startup .hint {
     font-size: 18px;
 }
 
+.generate-button {
+    font-size: 15px;
+    padding: 9px 12px;
+    border-radius: 16px;
+    font-weight: 700;
+    min-width: 220px;
+}
+
+.timer {
+    display: none;
+}
+
+body:not(.startup) .timer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 7px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
 body.startup #reset-placed {
     display: none;
 }
 
+/* colonne de droite: pieces, timer et bouton de reinitialisation */
 .pieces-panel {
     display: flex;
     flex-direction: column;
     gap: 12px;
     align-items: stretch;
+}
+
+/* place les actions de la reserve sur une seule ligne */
+.pieces-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 #generate {
@@ -105,7 +144,6 @@ body.startup #reset-placed {
 }
 
 #reset-placed {
-    align-self: flex-end;
     font-size: 16px;
     padding: 10px 14px;
     border-radius: 16px;
@@ -120,6 +158,7 @@ body.startup #reset-placed {
     display: none;
 }
 
+/* meme panneau d'aide que sur l'accueil, mais affiche en mode deroulant pendant la partie */
 body.startup .startup-rules,
 body:not(.startup) .game-rules {
     display: block;
@@ -304,6 +343,11 @@ body:not(.startup) #pieces {
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
     transition: opacity 180ms ease, transform 180ms ease;
     z-index: 1100;
+}
+
+.win-time {
+    font-weight: 700;
+    color: #d9e2ff;
 }
 
 .win-message.show {
