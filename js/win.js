@@ -1,5 +1,6 @@
 import { dragLayer, refs, state } from "./data.js";
 import { initBoard } from "./board.js";
+import { getElapsedTimeLabel, resetTimer, stopTimer } from "./timer.js";
 
 export function showWinMessage() {
     let message = document.getElementById("win-message");
@@ -18,6 +19,15 @@ export function showWinMessage() {
         newGameButton.onclick = () => state.handlers.returnToStartup();
     }
 
+    message.innerHTML = `
+        <strong>Bravo !</strong> Puzzle complete.
+        <div class="win-time">Temps final : ${getElapsedTimeLabel()}</div>
+        <button id="win-new-game" type="button">Retour accueil</button>
+    `;
+
+    const newGameButton = message.querySelector("#win-new-game");
+    newGameButton.onclick = () => state.handlers.returnToStartup();
+
     message.classList.add("show");
 }
 
@@ -30,6 +40,7 @@ export function hideWinMessage() {
 export function returnToStartup() {
     clearTimeout(state.winTimer);
     clearTimeout(state.returnToStartupTimer);
+    stopTimer();
 
     state.dragged = null;
     state.dragOrigin = null;
@@ -49,6 +60,7 @@ export function returnToStartup() {
     refs.piecesSVG.removeAttribute("height");
 
     hideWinMessage();
+    resetTimer();
     state.handlers.setGameStartedUI(false);
 }
 
@@ -62,6 +74,7 @@ export function checkWin() {
     }
 
     state.gameWon = true;
+    stopTimer();
     clearTimeout(state.winTimer);
     clearTimeout(state.returnToStartupTimer);
     state.winTimer = setTimeout(() => {

@@ -2,6 +2,7 @@ import { difficultyPresets, refs, state } from "./data.js";
 import { initBoard } from "./board.js";
 import { generateObstacles } from "./obstacle.js";
 import { generateSimplePieces } from "./pieces.js";
+import { startTimer } from "./timer.js";
 import { hideWinMessage } from "./win.js";
 import { clamp } from "./utils.js";
 
@@ -23,6 +24,7 @@ export function generateGame(w, h) {
         state.gameSettings.pieceMax
     );
 
+    startTimer();
     state.handlers.drawBoard();
     state.handlers.drawPieces();
 }

@@ -3,6 +3,7 @@ export const CELL = 50;
 export const refs = {
     boardSVG: document.getElementById("board"),
     piecesSVG: document.getElementById("pieces"),
+    timerText: document.getElementById("timer"),
     generateButton: document.getElementById("generate"),
     resetButton: document.getElementById("reset-placed"),
     hintText: document.querySelector(".hint"),
@@ -33,6 +34,9 @@ export const state = {
     gameWon: false,
     winTimer: null,
     returnToStartupTimer: null,
+    timerInterval: null,
+    timerStartedAt: 0,
+    elapsedSeconds: 0,
     gameSettings: { ...difficultyPresets.normal },
     gameStarted: false,
     handlers: {
@@ -44,7 +48,11 @@ export const state = {
         startDragFromBoard: null,
         snapAndPlace: null,
         rotateDraggedPiece: null,
-        setGameStartedUI: null
+        setGameStartedUI: null,
+        resetTimer: null,
+        startTimer: null,
+        stopTimer: null,
+        getElapsedTimeLabel: null
     }
 };
 
